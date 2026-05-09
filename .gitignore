@@ -1,0 +1,14 @@
+venv/
+__pycache__/
+*.pyc
+instance/
+database.db
+*.db
+*.sqlite3
+.env
+
+.DS_Store
+.AppleDouble
+.LSOverride
+
+Desktop.ini
