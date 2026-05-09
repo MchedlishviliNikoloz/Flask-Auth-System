@@ -1,4 +1,5 @@
 from models.user import User
+from models.profile import Profile
 from database import db
 from utils.validators import validate_username, validate_email, validate_password
 
@@ -25,7 +26,7 @@ def detect_login_input(login_input: str) -> str:
         return "email"
     return "username"
 
-def register_user(user: User):
+def register_user(user: User, profile: Profile):
     if username_exists(user.username):
         return {"success": False, "errors": ["Username already exists."],}
     if email_exists(user.email):
@@ -45,6 +46,9 @@ def register_user(user: User):
         return {"success": False, "errors": password_validation["errors"],}
 
     db.session.add(user)
+    db.session.commit()
+    profile.user_id = user.id
+    db.session.add(profile)
     db.session.commit()
     return {"success": True, "user": user}
 
