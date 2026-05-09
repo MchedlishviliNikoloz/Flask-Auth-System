@@ -313,7 +313,7 @@
 
         .info-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(2, 1fr);
             gap: 14px;
             opacity: 0;
             animation: fadeUp 0.5s 0.3s ease forwards;
@@ -346,10 +346,6 @@
         .info-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-        }
-
-        .info-card:hover::before {
-            transform: scaleX(1);
         }
 
         .info-card-icon {
@@ -472,7 +468,7 @@
                 <div class="user-dropdown" id="userDropdown" role="menu">
 
                     <div class="dropdown-header">
-                        <div class="dropdown-header-name">{{ user.first_name or user.username }} {{ user.last_name or '' }}</div>
+                        <div class="dropdown-header-name">{{ user.profile.first_name or user.username }} {{ user.profile.last_name or '' }}</div>
                     </div>
 
                     <div class="dropdown-section">
@@ -507,7 +503,7 @@
                 <span class="hero-dot"></span>
                 Session active
             </div>
-            <h1>Welcome back,<br><em>{{ user.first_name or user.username }}.</em></h1>
+            <h1>Welcome back,<br><em>{{ user.profile.first_name or user.username }}.</em></h1>
             <p class="hero-desc">
                 Your authentication system is working correctly.
                 You successfully set up registration, validation, database integration,
@@ -542,15 +538,17 @@
                 <div class="info-value">{{ user.email }}</div>
             </div>
 
-            <div class="info-card">
-                <div class="info-card-icon">
-                    <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M10 2a5 5 0 015 5v1h1.5a1 1 0 011 1v7a2 2 0 01-2 2h-11a2 2 0 01-2-2V9a1 1 0 011-1H5V7a5 5 0 015-5z"/>
-                    </svg>
+            {% if user.profile.first_name and user.profile.last_name %}
+                <div class="info-card">
+                    <div class="info-card-icon">
+                        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10 2a5 5 0 015 5v1h1.5a1 1 0 011 1v7a2 2 0 01-2 2h-11a2 2 0 01-2-2V9a1 1 0 011-1H5V7a5 5 0 015-5z"/>
+                        </svg>
+                    </div>
+                    <div class="info-label">Full Name</div>
+                    <div class="info-value">{{ user.profile.first_name }} {{ user.profile.last_name }}</div>
                 </div>
-                <div class="info-label">Full Name</div>
-                <div class="info-value">{{ user.first_name }} {{ user.last_name }}</div>
-            </div>
+            {% endif %}
         </div>
 
         <div class="status-banner">
