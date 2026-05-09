@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Home — FlaskAuth</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --ink:       #1a1a1a;
+            --ink-soft:  #4a4a4a;
+            --ink-muted: #888;
+            --canvas:    #f7f6f2;
+            --surface:   #ffffff;
+            --border:    #e2e0d8;
+            --accent:    #1a1a1a;
+            --accent-fg: #ffffff;
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --radius-xl: 28px;
+            --shadow-card: 0 2px 4px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.07), 0 24px 48px rgba(0,0,0,0.05);
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.06);
+            --transition: 180ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: var(--canvas);
+            background-image:
+                radial-gradient(ellipse 80% 50% at 15% 5%, rgba(26,26,26,0.04) 0%, transparent 60%),
+                radial-gradient(ellipse 70% 60% at 90% 90%, rgba(26,26,26,0.03) 0%, transparent 60%);
+            min-height: 100vh;
+            color: var(--ink);
+        }
+
+        /* ── Navbar ── */
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            width: 100%;
+            padding: 0 40px;
+            height: 64px;
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            opacity: 0;
+            animation: fadeDown 0.45s 0.05s ease forwards;
+        }
+
+        .logo {
+            font-family: 'DM Serif Display', serif;
+            font-size: 17px;
+            font-weight: 400;
+            color: var(--ink);
+            letter-spacing: 0.02em;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 7px 14px 7px 8px;
+            border-radius: 999px;
+            box-shadow: var(--shadow-sm);
+            transition: box-shadow var(--transition);
+        }
+
+        .user-badge:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .user-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'DM Serif Display', serif;
+            font-size: 12px;
+            color: var(--accent-fg);
+            flex-shrink: 0;
+        }
+
+        .user-badge-name {
+            font-size: 13.5px;
+            font-weight: 500;
+            color: var(--ink);
+        }
+
+        /* Chevron inside badge */
+        .user-badge-chevron {
+            width: 14px;
+            height: 14px;
+            color: var(--ink-muted);
+            transition: transform var(--transition);
+            flex-shrink: 0;
+        }
+
+        /* ── Dropdown wrapper ── */
+        .user-menu {
+            position: relative;
+        }
+
+        .user-badge {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* Open state: rotate chevron */
+        .user-menu.open .user-badge-chevron {
+            transform: rotate(180deg);
+        }
+
+        /* Dropdown panel */
+        .user-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            min-width: 200px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.04), 0 12px 32px rgba(0,0,0,0.10);
+            overflow: hidden;
+            z-index: 300;
+            animation: dropIn 0.18s ease both;
+        }
+
+        .user-menu.open .user-dropdown {
+            display: block;
+        }
+
+        @keyframes dropIn {
+            from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+            to   { opacity: 1; transform: translateY(0)   scale(1);    }
+        }
+
+        /* Dropdown header */
+        .dropdown-header {
+            padding: 14px 16px 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .dropdown-header-name {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--ink);
+            margin-bottom: 2px;
+        }
+
+        .dropdown-header-email {
+            font-size: 12px;
+            color: var(--ink-muted);
+            word-break: break-all;
+        }
+
+        /* Dropdown items */
+        .dropdown-section {
+            padding: 6px;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 9px 10px;
+            background: none;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13.5px;
+            font-weight: 500;
+            color: var(--ink-soft);
+            text-decoration: none;
+            cursor: pointer;
+            transition: background var(--transition), color var(--transition);
+            text-align: left;
+        }
+
+        .dropdown-item:hover {
+            background: var(--canvas);
+            color: var(--ink);
+        }
+
+        .dropdown-item svg {
+            flex-shrink: 0;
+            color: var(--ink-muted);
+        }
+
+        /* Danger item (logout) */
+        .dropdown-item.danger {
+            color: #b91c1c;
+        }
+
+        .dropdown-item.danger svg {
+            color: #b91c1c;
+        }
+
+        .dropdown-item.danger:hover {
+            background: #fff5f5;
+            color: #991b1b;
+        }
+
+        /* Divider inside dropdown */
+        .dropdown-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 2px 0;
+        }
+
+        /* ── Page layout ── */
+        .page {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 52px 24px 80px;
+        }
+
+        /* ── Hero ── */
+        .hero {
+            margin-bottom: 36px;
+            opacity: 0;
+            animation: fadeUp 0.5s 0.15s ease forwards;
+        }
+
+        .hero-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--ink-muted);
+            margin-bottom: 14px;
+        }
+
+        .hero-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #22c55e;
+            box-shadow: 0 0 0 3px rgba(34,197,94,0.18);
+        }
+
+        .hero h1 {
+            font-family: 'DM Serif Display', serif;
+            font-size: clamp(32px, 5vw, 48px);
+            font-weight: 400;
+            line-height: 1.1;
+            color: var(--ink);
+            margin-bottom: 16px;
+        }
+
+        .hero h1 em {
+            font-style: italic;
+            color: var(--ink-soft);
+        }
+
+        .hero-desc {
+            font-size: 16px;
+            color: var(--ink-muted);
+            line-height: 1.65;
+            max-width: 540px;
+        }
+
+        /* ── Divider ── */
+        .section-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 36px 0;
+            opacity: 0;
+            animation: fadeUp 0.5s 0.2s ease forwards;
+        }
+
+        /* ── Info cards ── */
+        .info-section-label {
+            font-size: 11.5px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--ink-muted);
+            margin-bottom: 16px;
+            opacity: 0;
+            animation: fadeUp 0.5s 0.25s ease forwards;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            opacity: 0;
+            animation: fadeUp 0.5s 0.3s ease forwards;
+        }
+
+        .info-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 20px 22px;
+            box-shadow: var(--shadow-sm);
+            transition: transform var(--transition), box-shadow var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .info-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--accent);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+
+        .info-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+
+        .info-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .info-card-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: var(--canvas);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 14px;
+            color: var(--ink-soft);
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: var(--ink-muted);
+            font-weight: 500;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--ink);
+            word-break: break-word;
+        }
+
+        /* ── Status banner ── */
+        .status-banner {
+            margin-top: 24px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 18px 22px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            box-shadow: var(--shadow-sm);
+            opacity: 0;
+            animation: fadeUp 0.5s 0.35s ease forwards;
+        }
+
+        .status-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            color: #16a34a;
+        }
+
+        .status-text-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--ink);
+            margin-bottom: 2px;
+        }
+
+        .status-text-desc {
+            font-size: 13px;
+            color: var(--ink-muted);
+        }
+
+        /* ── Animations ── */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 640px) {
+            .navbar {
+                padding: 0 20px;
+            }
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            .page {
+                padding: 36px 16px 60px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo">FlaskAuth</div>
+        <div class="nav-right">
+            <div class="user-menu" id="userMenu">
+
+                <!-- Badge trigger -->
+                <div class="user-badge" id="userBadge" role="button" aria-haspopup="true" aria-expanded="false">
+                    <div class="user-avatar">{{ user.username[0] | upper }}</div>
+                    <span class="user-badge-name">{{ user.username }}</span>
+                    <svg class="user-badge-chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 7.5l5 5 5-5"/>
+                    </svg>
+                </div>
+
+                <!-- Dropdown panel -->
+                <div class="user-dropdown" id="userDropdown" role="menu">
+
+                    <div class="dropdown-header">
+                        <div class="dropdown-header-name">{{ user.first_name or user.username }} {{ user.last_name or '' }}</div>
+                    </div>
+
+                    <div class="dropdown-section">
+                        <!-- Future items go here -->
+                        <a href="#" class="dropdown-item" role="menuitem">
+                            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="10" cy="7" r="3.5"/>
+                                <path d="M3 18c0-3.5 3-6 7-6s7 2.5 7 6"/>
+                            </svg>
+                            Profile
+                        </a>
+
+                        <a href="{{ url_for('logout') }}" class="dropdown-item danger" role="menuitem">
+                            <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13 15l4-5-4-5"/>
+                                <path d="M17 10H7"/>
+                                <path d="M7 3H4a1 1 0 00-1 1v12a1 1 0 001 1h3"/>
+                            </svg>
+                            Sign out
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="page">
+
+        <div class="hero">
+            <div class="hero-eyebrow">
+                <span class="hero-dot"></span>
+                Session active
+            </div>
+            <h1>Welcome back,<br><em>{{ user.first_name or user.username }}.</em></h1>
+            <p class="hero-desc">
+                Your authentication system is working correctly.
+                You successfully set up registration, validation, database integration,
+                and session authentication with Flask.
+            </p>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <div class="info-section-label">Account Details</div>
+
+        <div class="info-grid">
+            <div class="info-card">
+                <div class="info-card-icon">
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="10" cy="7" r="3.5"/>
+                        <path d="M3 18c0-3.5 3-6 7-6s7 2.5 7 6"/>
+                    </svg>
+                </div>
+                <div class="info-label">Username</div>
+                <div class="info-value">{{ user.username }}</div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-card-icon">
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2.5" y="5" width="15" height="11" rx="2"/>
+                        <path d="M2.5 8l7.5 4.5L17.5 8"/>
+                    </svg>
+                </div>
+                <div class="info-label">Email</div>
+                <div class="info-value">{{ user.email }}</div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-card-icon">
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M10 2a5 5 0 015 5v1h1.5a1 1 0 011 1v7a2 2 0 01-2 2h-11a2 2 0 01-2-2V9a1 1 0 011-1H5V7a5 5 0 015-5z"/>
+                    </svg>
+                </div>
+                <div class="info-label">Full Name</div>
+                <div class="info-value">{{ user.first_name }} {{ user.last_name }}</div>
+            </div>
+        </div>
+
+        <div class="status-banner">
+            <div class="status-icon">
+                <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="10" cy="10" r="8"/>
+                    <path d="M6.5 10l2.5 2.5 4.5-4.5"/>
+                </svg>
+            </div>
+            <div>
+                <div class="status-text-title">Authentication successful</div>
+                <div class="status-text-desc">You are securely signed in. Your session is active and protected.</div>
+            </div>
+        </div>
+
+    </div>
+    <script>
+        const userMenu   = document.getElementById('userMenu');
+        const userBadge  = document.getElementById('userBadge');
+
+        userBadge.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const open = userMenu.classList.toggle('open');
+            userBadge.setAttribute('aria-expanded', open);
+        });
+
+        // Close when clicking outside
+        document.addEventListener('click', () => {
+            userMenu.classList.remove('open');
+            userBadge.setAttribute('aria-expanded', false);
+        });
+
+        // Prevent dropdown click from closing itself
+        document.getElementById('userDropdown').addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    </script>
+
+</body>
+</html>
