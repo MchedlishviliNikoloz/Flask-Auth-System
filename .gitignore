@@ -6,6 +6,7 @@ database.db
 *.db
 *.sqlite3
 .env
+.idea/
 
 .DS_Store
 .AppleDouble
