@@ -1,7 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for, session
+from flask_migrate import Migrate
 
 from database import db
 from models.user import User
+from models.profile import Profile
 from services.auth_service import register_user, authenticate_user
 
 app = Flask(__name__)
@@ -12,6 +14,8 @@ DB_PATH = "database.db"
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_PATH}'
 db.init_app(app)
 
+migrate = Migrate(app, db)
+
 @app.route('/')
 @app.route('/home')
 def home():
@@ -19,7 +23,7 @@ def home():
         return redirect(url_for('login'))
 
     user_id = session.get("user_id")
-    user = User.query.get(user_id)
+    user = db.session.get(User, user_id)
     return render_template('main/index.html', user=user)
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -36,13 +40,15 @@ def register():
 
         user = User(
             username=username,
-            first_name=first_name,
-            last_name=last_name,
             email=email,
             password=password
         )
+        profile = Profile(
+            first_name=first_name,
+            last_name=last_name,
+        )
 
-        result = register_user(user)
+        result = register_user(user, profile)
         if not result['success']:
             return render_template('auth/register.html', errors=result['errors'])
 
