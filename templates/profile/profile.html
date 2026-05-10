@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Profile — FlaskAuth</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --ink:        #1a1a1a;
+            --ink-soft:   #4a4a4a;
+            --ink-muted:  #888;
+            --canvas:     #f7f6f2;
+            --surface:    #ffffff;
+            --border:     #e2e0d8;
+            --border-focus: #1a1a1a;
+            --accent:     #1a1a1a;
+            --accent-fg:  #ffffff;
+            --error-bg:   #fff5f5;
+            --error-border: #f5c6c6;
+            --error-text: #b91c1c;
+            --success-bg: #f0fdf4;
+            --success-border: #bbf7d0;
+            --success-text: #16a34a;
+            --radius-sm:  8px;
+            --radius-md:  14px;
+            --radius-lg:  20px;
+            --shadow-sm:  0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.06);
+            --shadow-card:0 2px 4px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.07);
+            --shadow-toast:0 4px 12px rgba(0,0,0,0.12), 0 16px 40px rgba(0,0,0,0.10);
+            --transition: 180ms cubic-bezier(0.4,0,0.2,1);
+        }
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: var(--canvas);
+            background-image:
+                radial-gradient(ellipse 80% 50% at 15% 5%, rgba(26,26,26,0.04) 0%, transparent 60%),
+                radial-gradient(ellipse 70% 60% at 90% 90%, rgba(26,26,26,0.03) 0%, transparent 60%);
+            min-height: 100vh; color: var(--ink);
+        }
+
+        /* ── Toast ── */
+        .toast {
+            position: fixed;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 13px 18px;
+            background: #1a1a1a;
+            color: #fff;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-toast);
+            font-size: 13.5px;
+            font-weight: 500;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        .toast svg { flex-shrink: 0; color: #4ade80; }
+
+        /* ── Navbar ── */
+        .navbar {
+            position:sticky; top:0; z-index:100;
+            width:100%; padding:0 40px; height:64px;
+            background:rgba(255,255,255,0.85);
+            backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+            border-bottom:1px solid var(--border);
+            display:flex; justify-content:space-between; align-items:center;
+            opacity:0; animation:fadeDown 0.45s 0.05s ease forwards;
+        }
+        .logo { font-family:'DM Serif Display',serif; font-size:17px; color:var(--ink); letter-spacing:0.02em; text-decoration:none; }
+        .nav-back {
+            display:flex; align-items:center; gap:6px;
+            font-size:13.5px; font-weight:500; color:var(--ink-muted);
+            text-decoration:none; padding:7px 12px;
+            border:1px solid var(--border); border-radius:999px;
+            background:var(--surface); box-shadow:var(--shadow-sm);
+            transition:color var(--transition), box-shadow var(--transition);
+        }
+        .nav-back:hover { color:var(--ink); box-shadow:0 2px 8px rgba(0,0,0,0.1); }
+
+        /* ── Layout ── */
+        .page {
+            max-width:980px; margin:0 auto; padding:48px 24px 80px;
+            display:grid; grid-template-columns:220px 1fr; gap:32px;
+            opacity:0; animation:fadeUp 0.5s 0.15s ease forwards;
+        }
+        .page-header { grid-column:1/-1; margin-bottom:4px; }
+        .page-header h1 { font-family:'DM Serif Display',serif; font-size:32px; font-weight:400; color:var(--ink); margin-bottom:6px; }
+        .page-header p { font-size:14px; color:var(--ink-muted); }
+
+        /* ── Sidebar ── */
+        .sidebar { position:sticky; top:88px; height:fit-content; }
+        .sidebar-label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-muted); padding:0 12px; margin-bottom:6px; }
+        .sidebar-nav { display:flex; flex-direction:column; gap:2px; }
+        .sidebar-item {
+            display:flex; align-items:center; gap:10px;
+            padding:9px 12px; border-radius:var(--radius-sm);
+            font-size:13.5px; font-weight:500; color:var(--ink-soft);
+            cursor:pointer; border:none; background:none; text-align:left; width:100%;
+            transition:background var(--transition), color var(--transition);
+        }
+        .sidebar-item svg { flex-shrink:0; color:var(--ink-muted); transition:color var(--transition); }
+        .sidebar-item:hover { background:var(--surface); color:var(--ink); }
+        .sidebar-item.active { background:var(--surface); color:var(--ink); box-shadow:var(--shadow-sm); border:1px solid var(--border); }
+        .sidebar-item.active svg { color:var(--ink); }
+        .sidebar-divider { height:1px; background:var(--border); margin:10px 0; }
+
+        /* ── Panels ── */
+        .content { min-width:0; }
+        .panel { display:none; }
+        .panel.active { display:block; animation:panelIn 0.22s ease forwards; }
+
+        /* ── Card ── */
+        .panel-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-card); overflow:hidden; margin-bottom:20px; }
+        .avatar-section { display:flex; align-items:center; gap:20px; padding:20px 28px; border-bottom:1px solid var(--border); }
+        .avatar-circle { width:64px; height:64px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; font-family:'DM Serif Display',serif; font-size:26px; color:var(--accent-fg); flex-shrink:0; }
+        .avatar-name { font-size:15px; font-weight:600; color:var(--ink); margin-bottom:2px; }
+        .avatar-username { font-size:13px; color:var(--ink-muted); }
+        .panel-card-header { padding:24px 28px 20px; border-bottom:1px solid var(--border); }
+        .panel-card-header h2 { font-family:'DM Serif Display',serif; font-size:20px; font-weight:400; color:var(--ink); margin-bottom:3px; }
+        .panel-card-header p { font-size:13px; color:var(--ink-muted); }
+        .panel-card-body { padding:24px 28px; }
+        .panel-card-footer { padding:16px 28px; background:var(--canvas); border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+        .panel-card-footer-hint { font-size:12.5px; color:var(--ink-muted); }
+
+        /* ── Form ── */
+        .input-group { margin-bottom:18px; }
+        .input-group:last-child { margin-bottom:0; }
+        .input-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+        .input-group label { display:block; font-size:13px; font-weight:500; color:var(--ink-soft); margin-bottom:7px; letter-spacing:0.02em; }
+        .input-group input, .input-group textarea {
+            width:100%; padding:12px 14px; background:var(--canvas); border:1.5px solid var(--border);
+            border-radius:var(--radius-sm); font-family:'DM Sans',sans-serif; font-size:14.5px; color:var(--ink);
+            outline:none; resize:none;
+            transition:border-color var(--transition), background var(--transition), box-shadow var(--transition);
+        }
+        .input-group textarea { min-height:90px; line-height:1.6; }
+        .input-group input::placeholder, .input-group textarea::placeholder { color:#bbb; }
+        .input-group input:focus, .input-group textarea:focus { border-color:var(--border-focus); background:var(--surface); box-shadow:0 0 0 3px rgba(26,26,26,0.07); }
+        .input-hint { margin-top:5px; font-size:12px; color:var(--ink-muted); }
+
+        /* ── Buttons ── */
+        .btn { padding:10px 20px; border:none; border-radius:var(--radius-sm); font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; cursor:pointer; transition:opacity var(--transition), transform var(--transition); }
+        .btn:hover { opacity:0.88; transform:translateY(-1px); }
+        .btn:active { transform:translateY(0); opacity:1; }
+        .btn-primary { background:var(--accent); color:var(--accent-fg); }
+        .btn-danger { background:#fff5f5; color:#b91c1c; border:1.5px solid #f5c6c6; }
+        .btn-danger:hover { background:#fee2e2; opacity:1; }
+
+        /* ── Error alert (inline) ── */
+        .alert-error {
+            display:flex; gap:10px; align-items:flex-start;
+            padding:13px 16px; border-radius:var(--radius-md); margin-bottom:20px;
+            background:var(--error-bg); border:1px solid var(--error-border);
+            animation:shakeIn 0.35s ease;
+        }
+        .alert-icon { flex-shrink:0; width:17px; height:17px; margin-top:1px; color:var(--error-text); }
+        .alert-title { font-size:13px; font-weight:600; color:var(--error-text); margin-bottom:3px; }
+        .alert-error ul { list-style:none; }
+        .alert-error li { font-size:13px; line-height:1.5; color:var(--error-text); }
+        .alert-error li + li { margin-top:2px; }
+
+        /* ── Danger Zone ── */
+        .danger-card { background:var(--surface); border:1px solid #f5c6c6; border-radius:var(--radius-lg); overflow:hidden; }
+        .danger-card-header { padding:20px 28px 16px; border-bottom:1px solid #f5c6c6; }
+        .danger-card-header h2 { font-family:'DM Serif Display',serif; font-size:18px; font-weight:400; color:#b91c1c; margin-bottom:3px; }
+        .danger-card-header p { font-size:13px; color:#b91c1c; opacity:0.7; }
+        .danger-card-body { padding:20px 28px; }
+        .danger-item { display:flex; align-items:center; justify-content:space-between; gap:20px; }
+        .danger-item-title { font-size:14px; font-weight:500; color:var(--ink); margin-bottom:3px; }
+        .danger-item-desc { font-size:13px; color:var(--ink-muted); }
+
+        /* ── Modal ── */
+        .modal-overlay {
+            position:fixed; inset:0; z-index:500;
+            background:rgba(0,0,0,0.45);
+            backdrop-filter:blur(4px);
+            display:flex; align-items:center; justify-content:center;
+            padding:24px;
+            opacity:0; pointer-events:none;
+            transition:opacity 0.22s ease;
+        }
+        .modal-overlay.open { opacity:1; pointer-events:all; }
+        .modal {
+            background:var(--surface);
+            border:1px solid var(--border);
+            border-radius:var(--radius-lg);
+            box-shadow:0 8px 32px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.08);
+            width:100%; max-width:420px;
+            transform:translateY(12px) scale(0.98);
+            transition:transform 0.22s ease;
+            overflow:hidden;
+        }
+        .modal-overlay.open .modal { transform:translateY(0) scale(1); }
+        .modal-header {
+            padding:24px 24px 18px;
+            border-bottom:1px solid var(--border);
+            display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
+        }
+        .modal-header-icon {
+            width:36px; height:36px; border-radius:10px; flex-shrink:0;
+            background:#fff5f5; border:1px solid #f5c6c6;
+            display:flex; align-items:center; justify-content:center; color:#b91c1c;
+        }
+        .modal-header-text { flex:1; }
+        .modal-header-text h3 { font-family:'DM Serif Display',serif; font-size:18px; font-weight:400; color:var(--ink); margin-bottom:3px; }
+        .modal-header-text p { font-size:13px; color:var(--ink-muted); line-height:1.5; }
+        .modal-close {
+            background:none; border:none; cursor:pointer; padding:4px;
+            color:var(--ink-muted); border-radius:6px; flex-shrink:0;
+            transition:color var(--transition), background var(--transition);
+        }
+        .modal-close:hover { color:var(--ink); background:var(--canvas); }
+        .modal-body { padding:20px 24px; }
+        .modal-footer {
+            padding:16px 24px; background:var(--canvas);
+            border-top:1px solid var(--border);
+            display:flex; gap:10px; justify-content:flex-end;
+        }
+        .btn-sm { padding:8px 16px; font-size:13.5px; }
+        .btn-ghost { background:transparent; color:var(--ink-soft); border:1.5px solid var(--border); }
+        .btn-ghost:hover { background:var(--canvas); opacity:1; }
+        .btn-danger-solid { background:#b91c1c; color:#fff; }
+        .btn-danger-solid:hover { background:#991b1b; opacity:1; }
+
+        /* ── Animations ── */
+        @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes fadeDown { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes panelIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes shakeIn { 0%{transform:translateX(0)} 20%{transform:translateX(-4px)} 40%{transform:translateX(4px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(3px)} 100%{transform:translateX(0)} }
+
+        @media(max-width:768px) {
+            .page{grid-template-columns:1fr}
+            .sidebar{position:static}
+            .sidebar-nav{flex-direction:row;overflow-x:auto;padding-bottom:4px}
+            .sidebar-label,.sidebar-divider{display:none}
+            .sidebar-item{white-space:nowrap}
+            .input-row{grid-template-columns:1fr}
+            .navbar{padding:0 20px}
+            .toast{width:calc(100% - 48px); text-align:center; justify-content:center;}
+        }
+    </style>
+</head>
+<body>
+
+<!-- Toast notification -->
+<div class="toast" id="toast">
+    <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="10" cy="10" r="8"/>
+        <path d="M6.5 10l2.5 2.5 4.5-4.5"/>
+    </svg>
+    <span id="toast-msg">Changes saved successfully.</span>
+</div>
+
+<nav class="navbar">
+    <a href="{{ url_for('home') }}" class="logo">FlaskAuth</a>
+    <a href="{{ url_for('home') }}" class="nav-back">
+        <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5l-5 5 5 5"/></svg>
+        Back to home
+    </a>
+</nav>
+
+<div class="page">
+
+    <div class="page-header">
+        <h1>Profile Settings</h1>
+        <p>Manage your account information and preferences.</p>
+    </div>
+
+    <aside class="sidebar">
+        <div class="sidebar-label">Account</div>
+        <nav class="sidebar-nav">
+            <button class="sidebar-item" data-panel="general">
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="7" r="3.5"/><path d="M3 18c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>
+                General
+            </button>
+            <button class="sidebar-item" data-panel="contact">
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="15" height="11" rx="2"/><path d="M2.5 8l7.5 4.5L17.5 8"/></svg>
+                Contact
+            </button>
+            <button class="sidebar-item" data-panel="password">
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="9" width="12" height="9" rx="2"/><path d="M7 9V6a3 3 0 016 0v3"/></svg>
+                Password
+            </button>
+            <div class="sidebar-divider"></div>
+            <button class="sidebar-item" data-panel="danger" style="color:#b91c1c">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#b91c1c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-triangle-alert-icon lucide-triangle-alert"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+                Danger Zone
+            </button>
+        </nav>
+    </aside>
+
+    <div class="content">
+
+        <!-- General -->
+        <div class="panel" id="panel-general">
+            {% if errors and active_section == 'general' %}
+            <div class="alert-error">
+                <svg class="alert-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="8.5"/><line x1="10" y1="6.5" x2="10" y2="10.5"/><circle cx="10" cy="13.5" r="0.6" fill="currentColor" stroke="none"/></svg>
+                <div><div class="alert-title">Please fix the following</div><ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div>
+            </div>
+            {% endif %}
+            <div class="panel-card">
+                <div class="avatar-section">
+                    <div class="avatar-circle">{{ user.username[0] | upper }}</div>
+                    <div>
+                        <div class="avatar-name">{{ user.profile.first_name or '' }} {{ user.profile.last_name or '' }}</div>
+                        <div class="avatar-username">@{{ user.username }}</div>
+                    </div>
+                </div>
+                <div class="panel-card-header">
+                    <h2>General Information</h2>
+                    <p>Update your display name, username, and bio.</p>
+                </div>
+                <form method="POST" action="{{ url_for('profile_general') }}">
+                    <div class="panel-card-body">
+                        <div class="input-group">
+                            <label>Username</label>
+                            <input type="text" name="username" value="{{ user.username }}">
+                        </div>
+                        <div class="input-row">
+                            <div class="input-group">
+                                <label>First Name</label>
+                                <input type="text" name="first_name" value="{{ user.profile.first_name or '' }}" placeholder="Jane">
+                            </div>
+                            <div class="input-group">
+                                <label>Last Name</label>
+                                <input type="text" name="last_name" value="{{ user.profile.last_name or '' }}" placeholder="Smith">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label>Bio</label>
+                            <textarea name="bio" placeholder="Tell us a little about yourself...">{{ user.profile.bio or '' }}</textarea>
+                        </div>
+                    </div>
+                    <div class="panel-card-footer">
+                        <span class="panel-card-footer-hint">Changes are saved immediately.</span>
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Contact -->
+        <div class="panel" id="panel-contact">
+            {% if errors and active_section == 'contact' %}
+            <div class="alert-error">
+                <svg class="alert-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="8.5"/><line x1="10" y1="6.5" x2="10" y2="10.5"/><circle cx="10" cy="13.5" r="0.6" fill="currentColor" stroke="none"/></svg>
+                <div><div class="alert-title">Please fix the following</div><ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div>
+            </div>
+            {% endif %}
+            <div class="panel-card">
+                <div class="panel-card-header">
+                    <h2>Contact Information</h2>
+                    <p>Update the email address associated with your account.</p>
+                </div>
+                <form method="POST" action="{{ url_for('profile_contact') }}">
+                    <div class="panel-card-body">
+                        <div class="input-group">
+                            <label>Email Address</label>
+                            <input type="email" name="email" value="{{ user.email }}">
+                        </div>
+                    </div>
+                    <div class="panel-card-footer">
+                        <span class="panel-card-footer-hint">Used for login and notifications.</span>
+                        <button type="submit" class="btn btn-primary">Update email</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Password -->
+        <div class="panel" id="panel-password">
+            {% if errors and active_section == 'password' %}
+            <div class="alert-error">
+                <svg class="alert-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="8.5"/><line x1="10" y1="6.5" x2="10" y2="10.5"/><circle cx="10" cy="13.5" r="0.6" fill="currentColor" stroke="none"/></svg>
+                <div><div class="alert-title">Please fix the following</div><ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div>
+            </div>
+            {% endif %}
+            <div class="panel-card">
+                <div class="panel-card-header">
+                    <h2>Change Password</h2>
+                    <p>Choose a strong password with at least 8 characters.</p>
+                </div>
+                <form method="POST" action="{{ url_for('profile_password') }}">
+                    <div class="panel-card-body">
+                        <div class="input-group">
+                            <label>Current Password</label>
+                            <input type="password" name="current_password" placeholder="Your current password">
+                        </div>
+                        <div class="input-group">
+                            <label>New Password</label>
+                            <input type="password" name="new_password" placeholder="Choose a new password">
+                            <div class="input-hint">8+ characters, one uppercase letter and one number.</div>
+                        </div>
+                    </div>
+                    <div class="panel-card-footer">
+                        <span class="panel-card-footer-hint">You'll stay signed in after changing.</span>
+                        <button type="submit" class="btn btn-primary">Change password</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Danger Zone -->
+        <div class="panel" id="panel-danger">
+            {% if errors and active_section == 'danger' %}
+            <div class="alert-error">
+                <svg class="alert-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="8.5"/><line x1="10" y1="6.5" x2="10" y2="10.5"/><circle cx="10" cy="13.5" r="0.6" fill="currentColor" stroke="none"/></svg>
+                <div><div class="alert-title">Please fix the following</div><ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div>
+            </div>
+            {% endif %}
+            <div class="danger-card">
+                <div class="danger-card-header">
+                    <h2>Danger Zone</h2>
+                    <p>These actions are irreversible. Please be certain.</p>
+                </div>
+                <div class="danger-card-body">
+                    <div class="danger-item">
+                        <div>
+                            <div class="danger-item-title">Delete account</div>
+                            <div class="danger-item-desc">Permanently delete your account and all associated data.</div>
+                        </div>
+                        <button type="button" class="btn btn-danger" onclick="openDeleteModal()">Delete account</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Delete confirmation modal -->
+<div class="modal-overlay" id="deleteModal">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-header-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b91c1c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-triangle-alert-icon lucide-triangle-alert"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+            </div>
+            <div class="modal-header-text">
+                <h3>Delete your account?</h3>
+                <p>This action is permanent and cannot be undone. All your data will be removed.</p>
+            </div>
+            <button class="modal-close" onclick="closeDeleteModal()">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 5l10 10M15 5L5 15"/>
+                </svg>
+            </button>
+        </div>
+        <form method="POST" action="{{ url_for('profile_delete') }}">
+            <div class="modal-body">
+                <div class="input-group" style="margin-bottom:0">
+                    <label>Enter your password to confirm</label>
+                    <input type="password" name="password" id="deletePassword" placeholder="Your password" autocomplete="current-password">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost btn-sm" onclick="closeDeleteModal()">Cancel</button>
+                <button type="submit" class="btn btn-danger-solid btn-sm">Yes, delete my account</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const activeSection = "{{ active_section | default('general') }}";
+    const hasSuccess    = {{ 'true' if success else 'false' }};
+
+    const toastMessages = {
+        general:  'Changes saved successfully.',
+        contact:  'Email updated successfully.',
+        password: 'Password changed successfully.',
+    };
+
+    function openDeleteModal() {
+        document.getElementById('deleteModal').classList.add('open');
+        setTimeout(() => document.getElementById('deletePassword').focus(), 220);
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.remove('open');
+        document.getElementById('deletePassword').value = '';
+    }
+
+    // close on overlay click
+    document.getElementById('deleteModal').addEventListener('click', function(e) {
+        if (e.target === this) closeDeleteModal();
+    });
+
+    // close on Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeDeleteModal();
+    });
+
+    function switchPanel(name) {
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
+        document.getElementById('panel-' + name).classList.add('active');
+        document.querySelector('[data-panel="' + name + '"]').classList.add('active');
+    }
+
+    function showToast(msg) {
+        const toast = document.getElementById('toast');
+        document.getElementById('toast-msg').textContent = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3200);
+    }
+
+    document.querySelectorAll('.sidebar-item').forEach(btn => {
+        btn.addEventListener('click', () => switchPanel(btn.dataset.panel));
+    });
+
+    switchPanel(activeSection);
+
+    if (hasSuccess && toastMessages[activeSection]) {
+        setTimeout(() => showToast(toastMessages[activeSection]), 400);
+    }
+</script>
+
+</body>
+</html>
