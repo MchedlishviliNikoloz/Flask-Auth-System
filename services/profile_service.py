@@ -10,6 +10,9 @@ def update_general(user_id: int, username: str | None, first_name: str | None, l
     if not user:
         return {"success": False, "errors": ["User not found."]}
 
+    if username.lower() == user.username.lower() and first_name == user.profile.first_name and last_name == user.profile.last_name and bio == user.profile.bio:
+        return {"success": False, "errors": ["Make some changes before save."]}
+
     if username and username != user.username:
         username_validation = validate_username(username)
         if not username_validation["success"]:
@@ -35,6 +38,9 @@ def update_contact(user_id: int, email: str) -> dict:
     if not user:
         return {"success": False, "errors": ["User not found."]}
 
+    if email and email.lower() == user.email.lower():
+        return {"success": False, "errors": ["You are already using this email."]}
+
     if email and email != user.email:
         email_validation = validate_email(email)
         if not email_validation["success"]:
@@ -48,11 +54,13 @@ def update_contact(user_id: int, email: str) -> dict:
     db.session.commit()
     return {"success": True, "user": user}
 
-
 def update_password(user_id: int, current_password: str, new_password: str) -> dict:
     user = db.session.get(User, user_id)
     if not user:
         return {"success": False, "errors": ["User not found."]}
+
+    if not current_password or not new_password:
+        return {"success": False, "errors": ["Both fields are required."]}
 
     if user.password != current_password:
         return {"success": False, "errors": ["Current password is incorrect."]}
