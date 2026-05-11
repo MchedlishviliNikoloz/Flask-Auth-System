@@ -2,6 +2,7 @@ USERNAME_ERROR_MSGS = {
     "username_length": "Username length must be between 3 and 20 characters long.",
     "username_empty": "Username cannot be empty.",
     "contains_space": "Username cannot contain spaces.",
+    "username_lowercase": "Username must contain only lowercase letters.",
     "special_characters": "Only letters, numbers and these special characters are allowed: '_', '.', '-'",
 }
 EMAIL_ERROR_MSGS = {
@@ -35,6 +36,9 @@ def validate_username(username: str) -> dict:
 
     if " " in username:
         errors.append(USERNAME_ERROR_MSGS["contains_space"])
+
+    if any(char.isupper() for char in username):
+        errors.append(USERNAME_ERROR_MSGS["username_lowercase"])
 
     allowed_set = set(allowed_special_chars)
     for char in username:
