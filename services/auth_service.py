@@ -9,6 +9,7 @@ def email_exists(email: str) -> bool:
     return email_check
 
 def username_exists(username: str) -> bool:
+    username = username.lower()
     username_check = db.session.execute(db.select(User).filter_by(username=username)).scalar() is not None
     return username_check
 
@@ -27,6 +28,9 @@ def detect_login_input(login_input: str) -> str:
     return "username"
 
 def register_user(user: User, profile: Profile):
+    user.email = user.email.lower()
+    user.username = user.username.lower()
+
     if username_exists(user.username):
         return {"success": False, "errors": ["Username already exists."],}
     if email_exists(user.email):
@@ -53,6 +57,7 @@ def register_user(user: User, profile: Profile):
     return {"success": True, "user": user}
 
 def authenticate_user(login_input: str, password: str):
+    login_input = login_input.lower()
     login_input_type = detect_login_input(login_input)
     if login_input_type == "email":
         user = get_user_by_email(login_input)
