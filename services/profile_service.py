@@ -54,13 +54,16 @@ def update_contact(user_id: int, email: str) -> dict:
     db.session.commit()
     return {"success": True, "user": user}
 
-def update_password(user_id: int, current_password: str, new_password: str) -> dict:
+def update_password(user_id: int, current_password: str, new_password: str, confirm_password: str) -> dict:
     user = db.session.get(User, user_id)
     if not user:
         return {"success": False, "errors": ["User not found."]}
 
-    if not current_password or not new_password:
-        return {"success": False, "errors": ["Both fields are required."]}
+    if not current_password or not new_password or not confirm_password:
+        return {"success": False, "errors": ["All fields are required."]}
+
+    if confirm_password != new_password:
+        return {"success": False, "errors": ["The confirmation password does not match."]}
 
     if user.password != current_password:
         return {"success": False, "errors": ["Current password is incorrect."]}

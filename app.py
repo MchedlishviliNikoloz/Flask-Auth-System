@@ -140,8 +140,9 @@ def profile_password():
     user_id = session.get('user_id')
     current_password = request.form.get('current_password')
     new_password = request.form.get('new_password')
+    confirm_password = request.form.get('confirm_password')
 
-    result = update_password(user_id, current_password, new_password)
+    result = update_password(user_id, current_password, new_password, confirm_password)
 
     user = db.session.get(User, user_id)
     if not result['success']:
@@ -289,7 +290,8 @@ def api_profile_password():
     user_id = session.get('user_id')
     current_password = data.get('current_password')
     new_password = data.get('new_password')
-    result = update_password(user_id, current_password, new_password)
+    confirm_password = data.get('confirm_password')
+    result = update_password(user_id, current_password, new_password, confirm_password)
     if not result['success']:
         return {"success": False, "errors": result['errors']}, 400
 
