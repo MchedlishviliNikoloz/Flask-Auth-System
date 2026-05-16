@@ -473,7 +473,7 @@
 
                     <div class="dropdown-section">
                         <!-- Future items go here -->
-                        <a href="{{ url_for('profile') }}" class="dropdown-item" role="menuitem">
+                        <a href="{{ url_for('profile.profile') }}" class="dropdown-item" role="menuitem">
                             <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                                 <circle cx="10" cy="7" r="3.5"/>
                                 <path d="M3 18c0-3.5 3-6 7-6s7 2.5 7 6"/>
@@ -481,7 +481,7 @@
                             Profile
                         </a>
 
-                        <a href="{{ url_for('logout') }}" class="dropdown-item danger" role="menuitem">
+                        <a href="{{ url_for('auth.logout') }}" class="dropdown-item danger" role="menuitem">
                             <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M13 15l4-5-4-5"/>
                                 <path d="M17 10H7"/>

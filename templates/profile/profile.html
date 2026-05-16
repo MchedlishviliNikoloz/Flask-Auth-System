@@ -326,7 +326,7 @@
                     <h2>General Information</h2>
                     <p>Update your display name, username, and bio.</p>
                 </div>
-                <form method="POST" action="{{ url_for('profile_general') }}">
+                <form method="POST" action="{{ url_for('profile.profile_general') }}">
                     <div class="panel-card-body">
                         <div class="input-group">
                             <label>Username</label>
@@ -368,7 +368,7 @@
                     <h2>Contact Information</h2>
                     <p>Update the email address associated with your account.</p>
                 </div>
-                <form method="POST" action="{{ url_for('profile_contact') }}">
+                <form method="POST" action="{{ url_for('profile.profile_contact') }}">
                     <div class="panel-card-body">
                         <div class="input-group">
                             <label>Email Address</label>
@@ -396,7 +396,7 @@
                     <h2>Change Password</h2>
                     <p>Choose a strong password with at least 8 characters.</p>
                 </div>
-                <form method="POST" action="{{ url_for('profile_password') }}">
+                <form method="POST" action="{{ url_for('profile.profile_password') }}">
                     <div class="panel-card-body">
                         <div class="input-group">
                             <label>Current Password</label>
@@ -466,7 +466,7 @@
                 </svg>
             </button>
         </div>
-        <form method="POST" action="{{ url_for('profile_delete') }}">
+        <form method="POST" action="{{ url_for('profile.profile_delete') }}">
             <div class="modal-body">
                 <div class="input-group" style="margin-bottom:0">
                     <label>Enter your password to confirm</label>
