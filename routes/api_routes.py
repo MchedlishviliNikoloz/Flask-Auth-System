@@ -2,7 +2,7 @@ from flask import Blueprint, request, session
 from models.user import User
 from database import db
 from models.profile import Profile
-from services.auth_service import register_user, authenticate_user
+from services.auth_service import register_user, authenticate_user, username_exists, email_exists
 from services.profile_service import update_general, update_contact, update_password, delete_profile
 
 api_bp = Blueprint('api', __name__)
@@ -150,3 +150,19 @@ def api_profile_delete():
 
     session.clear()
     return {"success": True, "message": "Profile deleted successfully."}, 200
+
+@api_bp.route('/api/check/username', methods=['GET'])
+def api_check_username():
+    username = request.args.get('username', '').lower()
+    if not username:
+        return {"available": False}, 400
+    exists = username_exists(username)
+    return {"available": not exists}, 200
+
+@api_bp.route('/api/check/email', methods=['GET'])
+def api_check_email():
+    email = request.args.get('email', '').lower()
+    if not email:
+        return {"available": False}, 400
+    exists = email_exists(email)
+    return {"available": not exists}, 200
