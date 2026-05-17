@@ -29,13 +29,8 @@
             --transition: 180ms cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        *, *::before, *::after {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html { height: 100%; }
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+        html { height:100%; }
 
         body {
             font-family: 'DM Sans', sans-serif;
@@ -74,208 +69,128 @@
             animation: fadeUp 0.5s 0.1s ease forwards;
         }
 
-        .card-header {
-            margin-bottom: 32px;
-        }
-
+        .card-header { margin-bottom: 32px; }
         .card-header h1 {
             font-family: 'DM Serif Display', serif;
-            font-size: 34px;
-            font-weight: 400;
-            color: var(--ink);
-            line-height: 1.15;
-            margin-bottom: 6px;
+            font-size: 34px; font-weight: 400;
+            color: var(--ink); line-height: 1.15; margin-bottom: 6px;
         }
+        .card-header p { font-size: 14px; color: var(--ink-muted); font-weight: 400; }
 
-        .card-header p {
-            font-size: 14px;
-            color: var(--ink-muted);
-            font-weight: 400;
-        }
-
-        /* ── Errors ── */
+        /* Server-side errors */
         .errors {
             background: var(--error-bg);
             border: 1px solid var(--error-border);
             border-radius: var(--radius-md);
-            padding: 14px 16px;
-            margin-bottom: 24px;
-            display: flex;
-            gap: 10px;
-            align-items: flex-start;
+            padding: 14px 16px; margin-bottom: 24px;
+            display: flex; gap: 10px; align-items: flex-start;
             animation: shakeIn 0.35s ease;
         }
+        .errors-icon { flex-shrink:0; width:18px; height:18px; margin-top:1px; color:var(--error-text); }
+        .errors-body { flex:1; }
+        .errors-title { font-size:13px; font-weight:600; color:var(--error-text); margin-bottom:4px; }
+        .errors ul { list-style:none; }
+        .errors li { font-size:13px; color:var(--error-text); line-height:1.5; }
+        .errors li + li { margin-top:2px; }
 
-        .errors-icon {
-            flex-shrink: 0;
-            width: 18px;
-            height: 18px;
-            margin-top: 1px;
-            color: var(--error-text);
-        }
+        /* Name row */
+        .name-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
 
-        .errors-body {
-            flex: 1;
-        }
-
-        .errors-title {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--error-text);
-            margin-bottom: 4px;
-        }
-
-        .errors ul {
-            list-style: none;
-        }
-
-        .errors li {
-            font-size: 13px;
-            color: var(--error-text);
-            line-height: 1.5;
-        }
-
-        .errors li + li {
-            margin-top: 2px;
-        }
-
-        /* ── Name row ── */
-        .name-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px;
-        }
-
-        /* ── Form ── */
-        .input-group {
-            margin-bottom: 18px;
-        }
-
+        /* Form */
+        .input-group { margin-bottom: 18px; }
         .input-group label {
-            display: block;
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--ink-soft);
-            margin-bottom: 7px;
-            letter-spacing: 0.02em;
+            display:block; font-size:13px; font-weight:500;
+            color:var(--ink-soft); margin-bottom:7px; letter-spacing:0.02em;
         }
-
-        .input-group .label-optional {
-            font-size: 11px;
-            font-weight: 400;
-            color: var(--ink-muted);
-            margin-left: 4px;
-        }
-
         .input-group input {
-            width: 100%;
-            padding: 13px 15px;
-            background: var(--canvas);
-            border: 1.5px solid var(--border);
-            border-radius: var(--radius-sm);
-            font-family: 'DM Sans', sans-serif;
-            font-size: 15px;
-            color: var(--ink);
-            outline: none;
+            width:100%; padding:13px 15px;
+            background:var(--canvas); border:1.5px solid var(--border);
+            border-radius:var(--radius-sm); font-family:'DM Sans',sans-serif;
+            font-size:15px; color:var(--ink); outline:none;
             transition: border-color var(--transition), background var(--transition), box-shadow var(--transition);
         }
-
-        .input-group input::placeholder {
-            color: #bbb;
-        }
-
+        .input-group input::placeholder { color:#bbb; }
         .input-group input:focus {
             border-color: var(--border-focus);
             background: var(--surface);
             box-shadow: 0 0 0 3px rgba(26,26,26,0.07);
         }
 
-        /* ── Password hint ── */
-        .password-hint {
-            margin-top: 6px;
-            font-size: 12px;
-            color: var(--ink-muted);
+        /* Live validation states */
+        .input-group input.valid {
+            border-color: #16a34a;
+            background: #f0fdf4;
+        }
+        .input-group input.invalid {
+            border-color: #b91c1c;
+            background: #fff5f5;
         }
 
+        /* Field messages */
+        .field-msg {
+            margin-top: 5px;
+            font-size: 12px;
+            display: none;
+            align-items: center;
+            gap: 4px;
+            line-height: 1.4;
+        }
+        .field-msg.show { display: flex; }
+        .field-msg.ok   { color: #16a34a; }
+        .field-msg.err  { color: #b91c1c; }
 
+        /* Password strength bar */
+        .strength-wrap { margin-top: 8px; }
+        .strength-bar {
+            height: 3px; border-radius: 99px;
+            background: var(--border); overflow: hidden;
+        }
+        .strength-fill {
+            height: 100%; border-radius: 99px; width: 0%;
+            transition: width 0.3s ease, background 0.3s ease;
+        }
+        .strength-label {
+            margin-top: 4px; font-size: 11.5px; color: var(--ink-muted);
+        }
+
+        /* Submit button */
         .register-btn {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            background: var(--accent);
-            color: var(--accent-fg);
-            font-family: 'DM Sans', sans-serif;
-            font-size: 15px;
-            font-weight: 500;
-            letter-spacing: 0.01em;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            margin-top: 8px;
+            width:100%; padding:14px; border:none;
+            background:var(--accent); color:var(--accent-fg);
+            font-family:'DM Sans',sans-serif; font-size:15px; font-weight:500;
+            letter-spacing:0.01em; border-radius:var(--radius-sm);
+            cursor:pointer; margin-top:8px;
             transition: opacity var(--transition), transform var(--transition);
         }
+        .register-btn:hover { opacity:0.88; transform:translateY(-1px); }
+        .register-btn:active { transform:translateY(0); opacity:1; }
+        .register-btn:disabled { opacity:0.45; cursor:not-allowed; transform:none; }
 
-        .register-btn:hover {
-            opacity: 0.88;
-            transform: translateY(-1px);
-        }
-
-        .register-btn:active {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
-        /* ── Bottom ── */
-        .divider {
-            height: 1px;
-            background: var(--border);
-            margin: 28px 0;
-        }
-
-        .login-link {
-            text-align: center;
-            font-size: 13.5px;
-            color: var(--ink-muted);
-        }
-
+        .divider { height:1px; background:var(--border); margin:28px 0; }
+        .login-link { text-align:center; font-size:13.5px; color:var(--ink-muted); }
         .login-link a {
-            color: var(--ink);
-            font-weight: 600;
-            text-decoration: none;
-            border-bottom: 1.5px solid transparent;
-            transition: border-color var(--transition);
+            color:var(--ink); font-weight:600; text-decoration:none;
+            border-bottom:1.5px solid transparent; transition:border-color var(--transition);
         }
+        .login-link a:hover { border-bottom-color:var(--ink); }
 
-        .login-link a:hover {
-            border-bottom-color: var(--ink);
-        }
-
-        /* ── Animations ── */
         @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(10px); }
-            to   { opacity: 1; transform: translateY(0); }
+            from { opacity:0; transform:translateY(10px); }
+            to   { opacity:1; transform:translateY(0); }
         }
-
         @keyframes shakeIn {
-            0%   { transform: translateX(0); }
-            20%  { transform: translateX(-4px); }
-            40%  { transform: translateX(4px); }
-            60%  { transform: translateX(-3px); }
-            80%  { transform: translateX(3px); }
-            100% { transform: translateX(0); }
+            0%  { transform:translateX(0); }
+            20% { transform:translateX(-4px); }
+            40% { transform:translateX(4px); }
+            60% { transform:translateX(-3px); }
+            80% { transform:translateX(3px); }
+            100%{ transform:translateX(0); }
         }
 
-        /* ── Responsive ── */
         @media (max-width: 480px) {
-            .card {
-                padding: 32px 24px 28px;
-            }
-            .card-header h1 {
-                font-size: 28px;
-            }
-            .name-row {
-                grid-template-columns: 1fr;
-                gap: 0;
-            }
+            .card { padding:32px 24px 28px; }
+            .card-header h1 { font-size:28px; }
+            .name-row { grid-template-columns:1fr; gap:0; }
         }
     </style>
 </head>
@@ -298,52 +213,215 @@
         </svg>
         <div class="errors-body">
             <div class="errors-title">Please fix the following</div>
-            <ul>
-                {% for error in errors %}
-                    <li>{{ error }}</li>
-                {% endfor %}
-            </ul>
+            <ul>{% for error in errors %}<li>{{ error }}</li>{% endfor %}</ul>
         </div>
     </div>
     {% endif %}
 
-    <form method="POST">
+    <form method="POST" id="registerForm" novalidate>
+
+        <!-- Username -->
         <div class="input-group">
             <label>Username</label>
-            <input type="text" name="username" placeholder="yourhandle" required>
+            <input type="text" name="username" id="username" placeholder="yourhandle" autocomplete="off">
+            <div class="field-msg" id="username-msg"></div>
         </div>
 
+        <!-- Email -->
         <div class="input-group">
             <label>Email</label>
-            <input type="email" name="email" placeholder="you@example.com" required>
+            <input type="email" name="email" id="email" placeholder="you@example.com">
+            <div class="field-msg" id="email-msg"></div>
         </div>
 
+        <!-- First / Last name -->
         <div class="name-row">
             <div class="input-group">
-                <label>First Name <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;color:#aaa">— optional</span></label>
-                <input type="text" name="first_name" placeholder="Jane">
+                <label>First Name <span style="font-weight:400;font-size:11px;color:#aaa">— optional</span></label>
+                <input type="text" name="first_name" id="first_name" placeholder="Jane">
             </div>
             <div class="input-group">
-                <label>Last Name <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;color:#aaa">— optional</span></label>
-                <input type="text" name="last_name" placeholder="Smith">
+                <label>Last Name <span style="font-weight:400;font-size:11px;color:#aaa">— optional</span></label>
+                <input type="text" name="last_name" id="last_name" placeholder="Smith">
             </div>
         </div>
 
+        <!-- Password -->
         <div class="input-group">
             <label>Password</label>
-            <input type="password" name="password" placeholder="Choose a strong password" required>
-            <div class="password-hint">Use 8+ characters with a mix of letters and numbers.</div>
+            <input type="password" name="password" id="password" placeholder="Choose a strong password">
+            <div class="strength-wrap">
+                <div class="strength-bar"><div class="strength-fill" id="strength-fill"></div></div>
+                <div class="strength-label" id="strength-label"></div>
+            </div>
+            <div class="field-msg" id="password-msg"></div>
         </div>
-
-        <button type="submit" class="register-btn">Create Account</button>
+        <button type="submit" class="register-btn" id="submitBtn">Create Account</button>
     </form>
 
     <div class="divider"></div>
-
     <div class="login-link">
-        Already have an account? <a href="/login">Sign in</a>
+        Already have an account? <a href="{{ url_for('auth.login') }}">Sign in</a>
     </div>
 </div>
+
+<script>
+    // ── helpers ──────────────────────────────────────────
+    function setMsg(id, text, type) {
+        const el = document.getElementById(id);
+        el.textContent = text;
+        el.className = 'field-msg show ' + type;
+    }
+    function clearMsg(id) {
+        const el = document.getElementById(id);
+        el.textContent = '';
+        el.className = 'field-msg';
+    }
+    function setInput(id, state) {
+        const el = document.getElementById(id);
+        el.classList.remove('valid', 'invalid');
+        if (state) el.classList.add(state);
+    }
+
+    // ── username ─────────────────────────────────────────
+    let usernameTimer = null;
+    const usernameInput = document.getElementById('username');
+
+    usernameInput.addEventListener('input', () => {
+        clearTimeout(usernameTimer);
+        const val = usernameInput.value.trim().toLowerCase();
+
+        if (!val) { setInput('username', null); clearMsg('username-msg'); return; }
+
+        // local rules first
+        if (val.length < 3 || val.length > 20) {
+            setInput('username', 'invalid');
+            setMsg('username-msg', 'Must be 3–20 characters.', 'err');
+            return;
+        }
+        if (/\s/.test(val)) {
+            setInput('username', 'invalid');
+            setMsg('username-msg', 'No spaces allowed.', 'err');
+            return;
+        }
+        if (/[^a-z0-9_.\-]/.test(val)) {
+            setInput('username', 'invalid');
+            setMsg('username-msg', "Only letters, numbers, '_', '.', '-' allowed.", 'err');
+            return;
+        }
+
+        // debounce API call — 500ms after user stops typing
+        setMsg('username-msg', 'Checking…', 'ok');
+        usernameTimer = setTimeout(async () => {
+            try {
+                const res = await fetch(`/api/check/username?username=${encodeURIComponent(val)}`);
+                const data = await res.json();
+                if (data.available) {
+                    setInput('username', 'valid');
+                    setMsg('username-msg', 'Username is available.', 'ok');
+                } else {
+                    setInput('username', 'invalid');
+                    setMsg('username-msg', 'Username is already taken.', 'err');
+                }
+            } catch {
+                clearMsg('username-msg');
+            }
+        }, 500);
+    });
+
+    // ── email ─────────────────────────────────────────────
+    const emailInput = document.getElementById('email');
+    let emailTimer = null;
+
+    emailInput.addEventListener('input', () => {
+        clearTimeout(emailTimer);
+        const val = emailInput.value.trim();
+        if (!val) { setInput('email', null); clearMsg('email-msg'); return; }
+
+        // Best email format validation using an accurate regex pattern
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const validFormat = emailRegex.test(val);
+
+        if (!validFormat) {
+            setInput('email', 'invalid');
+            setMsg('email-msg', 'Enter a valid email address.', 'err');
+            return;
+        }
+
+        // format ok — check availability (remains exactly as you wrote it)
+        setMsg('email-msg', 'Checking…', 'ok');
+        emailTimer = setTimeout(async () => {
+            try {
+                const res = await fetch(`/api/check/email?email=${encodeURIComponent(val)}`);
+                const data = await res.json();
+                if (data.available) {
+                    setInput('email', 'valid');
+                    setMsg('email-msg', 'Email is available.', 'ok');
+                } else {
+                    setInput('email', 'invalid');
+                    setMsg('email-msg', 'An account with this email already exists.', 'err');
+                }
+            } catch {
+                setInput('email', 'valid');
+                setMsg('email-msg', 'Looks good.', 'ok');
+            }
+        }, 500);
+    });
+
+    // ── password strength ─────────────────────────────────
+    const passwordInput   = document.getElementById('password');
+    const strengthFill    = document.getElementById('strength-fill');
+    const strengthLabel   = document.getElementById('strength-label');
+
+    function checkPasswordStrength(pw) {
+        let score = 0;
+        if (pw.length >= 8)  score++;
+        if (pw.length >= 12) score++;
+        if (/[A-Z]/.test(pw)) score++;
+        if (/[0-9]/.test(pw)) score++;
+        if (/[^a-zA-Z0-9]/.test(pw)) score++;
+        return score;
+    }
+
+    passwordInput.addEventListener('input', () => {
+        const val = passwordInput.value;
+        if (!val) {
+            strengthFill.style.width = '0%';
+            strengthLabel.textContent = '';
+            setInput('password', null);
+            clearMsg('password-msg');
+            validateConfirm();
+            return;
+        }
+
+        // rules
+        const errors = [];
+        if (val.length < 8)                          errors.push('at least 8 characters');
+        if (!/[A-Z]/.test(val))                      errors.push('one uppercase letter');
+        if (!/[0-9]/.test(val))                      errors.push('one number');
+        if (/\s/.test(val))                          errors.push('no spaces');
+
+        if (errors.length) {
+            setInput('password', 'invalid');
+            setMsg('password-msg', 'Needs: ' + errors.join(', ') + '.', 'err');
+        } else {
+            setInput('password', 'valid');
+            clearMsg('password-msg');
+        }
+
+        // strength bar
+        const score = checkPasswordStrength(val);
+        const pct   = (score / 5) * 100;
+        const colors = ['#ef4444','#f97316','#eab308','#22c55e','#16a34a'];
+        const labels = ['Very weak','Weak','Fair','Strong','Very strong'];
+        strengthFill.style.width     = pct + '%';
+        strengthFill.style.background = colors[score - 1] || '#e5e7eb';
+        strengthLabel.textContent    = score > 0 ? labels[score - 1] : '';
+        strengthLabel.style.color    = colors[score - 1] || 'var(--ink-muted)';
+
+        validateConfirm();
+    });
+</script>
 
 </body>
 </html>
