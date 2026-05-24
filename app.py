@@ -5,9 +5,7 @@ import os
 
 from database import db
 from models import User
-from routes.auth_routes import auth_bp
-from routes.profile_routes import profile_bp
-from routes.api_routes import api_bp
+from routes import *
 
 app = Flask(__name__)
 
