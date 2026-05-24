@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
 from models.user import User
 from database import db
-from services.profile_service import update_general, update_contact, update_password, delete_profile
+from services import update_general, update_contact, update_password, delete_profile
 
 profile_bp = Blueprint('profile', __name__)
 

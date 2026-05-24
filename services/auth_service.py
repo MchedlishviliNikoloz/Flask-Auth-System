@@ -1,5 +1,4 @@
-from models.user import User
-from models.profile import Profile
+from models import User, Profile
 from database import db
 from utils.validators import validate_username, validate_email, validate_password
 

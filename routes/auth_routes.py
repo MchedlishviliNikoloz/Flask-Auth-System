@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
 from models.user import User
 from models.profile import Profile
-from services.auth_service import register_user, authenticate_user
+from services import register_user, authenticate_user
 
 auth_bp = Blueprint('auth', __name__)
 

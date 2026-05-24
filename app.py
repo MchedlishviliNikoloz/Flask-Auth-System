@@ -1,15 +1,19 @@
 from flask import Flask, redirect, url_for, render_template, session
 from flask_migrate import Migrate
+from dotenv import load_dotenv
+import os
 
 from database import db
-from models.user import User
+from models import User
 from routes.auth_routes import auth_bp
 from routes.profile_routes import profile_bp
 from routes.api_routes import api_bp
 
 app = Flask(__name__)
 
-app.config['SECRET_KEY'] = 'secret_key'
+load_dotenv()
+
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 DB_PATH = "database.db"
 
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_PATH}'

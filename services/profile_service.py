@@ -1,7 +1,6 @@
 from models.user import User
-from models.profile import Profile
 from database import db
-from services.auth_service import username_exists, email_exists
+from services import username_exists, email_exists
 from utils.validators import validate_username, validate_email, validate_password
 
 

@@ -2,8 +2,8 @@ from flask import Blueprint, request, session
 from models.user import User
 from database import db
 from models.profile import Profile
-from services.auth_service import register_user, authenticate_user, username_exists, email_exists
-from services.profile_service import update_general, update_contact, update_password, delete_profile
+from services import register_user, authenticate_user, username_exists, email_exists
+from services import update_general, update_contact, update_password, delete_profile
 
 api_bp = Blueprint('api', __name__)
 
