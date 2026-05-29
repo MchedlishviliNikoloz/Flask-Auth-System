@@ -3,6 +3,8 @@ from database import db
 from services import username_exists, email_exists
 from utils.validators import validate_username, validate_email, validate_password
 
+from werkzeug.security import generate_password_hash, check_password_hash
+
 
 def update_general(user_id: int, username: str | None, first_name: str | None, last_name: str | None, bio: str | None) -> dict:
     user = db.session.get(User, user_id)
@@ -64,7 +66,7 @@ def update_password(user_id: int, current_password: str, new_password: str, conf
     if confirm_password != new_password:
         return {"success": False, "errors": ["The confirmation password does not match."]}
 
-    if user.password != current_password:
+    if not check_password_hash(user.password, current_password):
         return {"success": False, "errors": ["Current password is incorrect."]}
 
     if new_password == user.password:
@@ -74,7 +76,7 @@ def update_password(user_id: int, current_password: str, new_password: str, conf
     if not password_validation["success"]:
         return {"success": False, "errors": password_validation["errors"]}
 
-    user.password = new_password
+    user.password = generate_password_hash(new_password)
     db.session.commit()
     return {"success": True, "user": user}
 
@@ -86,7 +88,7 @@ def delete_profile(user_id: int, password: str) -> dict:
     if not password:
         return {"success": False, "errors": ["Password cannot be empty."]}
 
-    if user.password != password:
+    if not check_password_hash(user.password, password):
         return {"success": False, "errors": ["Incorrect password."]}
 
     if user.profile:

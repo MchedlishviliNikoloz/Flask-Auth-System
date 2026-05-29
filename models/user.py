@@ -2,6 +2,7 @@ from database import db
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime, timezone
 
+from werkzeug.security import check_password_hash
 
 class User(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -21,4 +22,4 @@ class User(db.Model):
         }
 
     def check_password(self, password: str) -> bool:
-        return password == self.password
+        return check_password_hash(self.password, password)

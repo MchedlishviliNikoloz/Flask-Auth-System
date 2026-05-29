@@ -2,6 +2,7 @@ from models import User, Profile
 from database import db
 from utils.validators import validate_username, validate_email, validate_password
 
+from werkzeug.security import generate_password_hash
 
 def email_exists(email: str) -> bool:
     email_check = db.session.execute(db.select(User).filter_by(email=email)).scalar() is not None
@@ -47,6 +48,8 @@ def register_user(user: User, profile: Profile):
 
     if not password_validation["success"]:
         return {"success": False, "errors": password_validation["errors"],}
+
+    user.password = generate_password_hash(user.password)
 
     db.session.add(user)
     db.session.commit()
