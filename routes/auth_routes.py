@@ -8,7 +8,7 @@ auth_bp = Blueprint('auth', __name__)
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     if session.get('user_id'):
-        return redirect(url_for('home'))
+        return redirect(url_for('main.home'))
 
     if request.method == 'POST':
         username = request.form['username']
@@ -33,14 +33,14 @@ def register():
 
         session['user_id'] = result['user'].id
 
-        return redirect(url_for('home'))
+        return redirect(url_for('main.home'))
 
     return render_template('auth/register.html')
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if session.get('user_id'):
-        return redirect(url_for('home'))
+        return redirect(url_for('main.home'))
 
     if request.method == 'POST':
         login_input = request.form['login_input']
@@ -52,11 +52,11 @@ def login():
 
         session['user_id'] = result['user'].id
 
-        return redirect(url_for('home'))
+        return redirect(url_for('main.home'))
 
     return render_template('auth/login.html')
 
 @auth_bp.route('/logout')
 def logout():
     session.pop('user_id')
-    return redirect(url_for('home'))
+    return redirect(url_for('main.home'))
