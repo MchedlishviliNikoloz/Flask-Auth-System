@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
 from models.user import User
 from database import db
-from services import update_general, update_contact, update_password, delete_profile
+from services import update_general, update_contact, update_password, delete_profile, update_privacy
 
 profile_bp = Blueprint('profile', __name__)
 
@@ -67,6 +67,18 @@ def profile_password():
         return render_template('profile/profile.html', user=user, errors=result['errors'], active_section='password')
 
     return render_template('profile/profile.html', user=user, success=True, active_section='password')
+
+@profile_bp.route('/profile/privacy', methods=['POST'])
+def profile_privacy():
+    if not session.get('user_id'):
+        return redirect(url_for('auth.login'))
+    user_id = session.get('user_id')
+    is_public = request.form.get('is_public') == '1'
+    result = update_privacy(user_id, is_public)
+    user = db.session.get(User, user_id)
+    if not result['success']:
+        return render_template('profile/profile.html', user=user, errors=result['errors'], active_section='privacy')
+    return render_template('profile/profile.html', user=user, success=True, active_section='privacy')
 
 @profile_bp.route('/profile/delete', methods=['POST'])
 def profile_delete():
