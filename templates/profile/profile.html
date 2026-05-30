@@ -253,6 +253,33 @@
             .navbar{padding:0 20px}
             .toast{width:calc(100% - 48px); text-align:center; justify-content:center;}
         }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 46px;
+            height: 26px;
+            flex-shrink: 0;
+        }
+        .toggle-switch input { opacity:0; width:0; height:0; }
+        .toggle-slider {
+            position: absolute; inset: 0;
+            background: var(--border);
+            border-radius: 999px;
+            cursor: pointer;
+            transition: background 0.25s ease;
+        }
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            width: 20px; height: 20px;
+            left: 3px; top: 3px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+            transition: transform 0.25s ease;
+        }
+        .toggle-switch input:checked + .toggle-slider { background: #1a1a1a; }
+        .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
     </style>
 </head>
 <body>
@@ -267,8 +294,8 @@
 </div>
 
 <nav class="navbar">
-    <a href="{{ url_for('home') }}" class="logo">FlaskAuth</a>
-    <a href="{{ url_for('home') }}" class="nav-back">
+    <a href="{{ url_for('main.home') }}" class="logo">FlaskAuth</a>
+    <a href="{{ url_for('main.home') }}" class="nav-back">
         <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5l-5 5 5 5"/></svg>
         Back to home
     </a>
@@ -295,6 +322,14 @@
             <button class="sidebar-item" data-panel="password">
                 <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="9" width="12" height="9" rx="2"/><path d="M7 9V6a3 3 0 016 0v3"/></svg>
                 Password
+            </button>
+            <button class="sidebar-item" data-panel="privacy">
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="10" cy="10" r="8"/>
+                    <path d="M10 2c0 0-5 3.5-5 8s5 8 5 8 5-3.5 5-8-5-8-5-8z"/>
+                    <path d="M2 10h16"/>
+                </svg>
+                Privacy
             </button>
             <div class="sidebar-divider"></div>
             <button class="sidebar-item" data-panel="danger" style="color:#b91c1c">
@@ -421,6 +456,56 @@
             </div>
         </div>
 
+        <div class="panel" id="panel-privacy">
+            {% if errors and active_section == 'privacy' %}
+            <div class="alert-error">
+                <svg class="alert-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="8.5"/><line x1="10" y1="6.5" x2="10" y2="10.5"/><circle cx="10" cy="13.5" r="0.6" fill="currentColor" stroke="none"/></svg>
+                <div><div class="alert-title">Please fix the following</div><ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div>
+            </div>
+            {% endif %}
+            <div class="panel-card">
+                <div class="panel-card-header">
+                    <h2>Privacy</h2>
+                    <p>Control who can see your profile and personal information.</p>
+                </div>
+                <form method="POST" action="{{ url_for('profile.profile_privacy') }}">
+                    <div class="panel-card-body">
+
+                        <!-- Toggle row -->
+                        <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
+                            <div>
+                                <div style="font-size:14px; font-weight:600; color:var(--ink); margin-bottom:4px;">Public Profile</div>
+                                <div style="font-size:13px; color:var(--ink-muted); line-height:1.5;">
+                                    When enabled, anyone can view your profile at
+                                    <span style="font-family:monospace; font-size:12px; background:var(--canvas); padding:1px 6px; border-radius:4px; border:1px solid var(--border);">/u/{{ user.username }}</span>
+                                </div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="is_public" value="1" id="privacyToggle" {% if user.profile.is_public %}checked{% endif %}>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+
+                        <!-- Status indicator -->
+                        <div id="privacyStatus" style="margin-top:14px; display:flex; align-items:center; gap:8px; font-size:13px;">
+                            {% if user.profile.is_public %}
+                            <span style="width:8px;height:8px;border-radius:50%;background:#16a34a;box-shadow:0 0 0 3px rgba(22,163,74,0.18);flex-shrink:0;"></span>
+                            <span style="color:#16a34a; font-weight:500;">Your profile is public — visible to everyone.</span>
+                            {% else %}
+                            <span style="width:8px;height:8px;border-radius:50%;background:#888;flex-shrink:0;"></span>
+                            <span style="color:var(--ink-muted); font-weight:500;">Your profile is private — only you can see it.</span>
+                            {% endif %}
+                        </div>
+
+                    </div>
+                    <div class="panel-card-footer">
+                        <span class="panel-card-footer-hint">Changes take effect immediately.</span>
+                        <button type="submit" class="btn btn-primary">Save privacy</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <!-- Danger Zone -->
         <div class="panel" id="panel-danger">
             {% if errors and active_section == 'danger' %}
@@ -534,6 +619,15 @@
     if (hasSuccess && toastMessages[activeSection]) {
         setTimeout(() => showToast(toastMessages[activeSection]), 400);
     }
+
+    document.getElementById('privacyToggle').addEventListener('change', function() {
+        const status = document.getElementById('privacyStatus');
+        if (this.checked) {
+            status.innerHTML = '<span style="width:8px;height:8px;border-radius:50%;background:#16a34a;box-shadow:0 0 0 3px rgba(22,163,74,0.18);flex-shrink:0;"></span><span style="color:#16a34a;font-weight:500;">Your profile is public — visible to everyone.</span>';
+        } else {
+            status.innerHTML = '<span style="width:8px;height:8px;border-radius:50%;background:#888;flex-shrink:0;"></span><span style="color:var(--ink-muted);font-weight:500;">Your profile is private — only you can see it.</span>';
+        }
+    });
 </script>
 
 </body>
