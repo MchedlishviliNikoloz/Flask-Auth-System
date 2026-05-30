@@ -84,6 +84,10 @@ def update_privacy(user_id: int, is_public: bool) -> dict:
     user = db.session.get(User, user_id)
     if not user:
         return {"success": False, "errors": ["User not found."]}
+
+    if user.profile.is_public == is_public:
+        return {"success": False, "errors": ["Make some changes before save."]}
+
     user.profile.is_public = is_public
     db.session.commit()
     return {"success": True, "user": user}
