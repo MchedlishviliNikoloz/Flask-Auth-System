@@ -80,6 +80,14 @@ def update_password(user_id: int, current_password: str, new_password: str, conf
     db.session.commit()
     return {"success": True, "user": user}
 
+def update_privacy(user_id: int, is_public: bool) -> dict:
+    user = db.session.get(User, user_id)
+    if not user:
+        return {"success": False, "errors": ["User not found."]}
+    user.profile.is_public = is_public
+    db.session.commit()
+    return {"success": True, "user": user}
+
 def delete_profile(user_id: int, password: str) -> dict:
     user = db.session.get(User, user_id)
     if not user:
