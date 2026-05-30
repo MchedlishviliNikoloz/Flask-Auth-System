@@ -22,16 +22,11 @@ migrate = Migrate(app, db)
 app.register_blueprint(auth_bp)
 app.register_blueprint(profile_bp)
 app.register_blueprint(api_bp)
+app.register_blueprint(main_bp)
 
-@app.route('/')
-@app.route('/home')
-def home():
-    if not session.get('user_id'):
-        return redirect(url_for('auth.login'))
-
-    user_id = session.get("user_id")
-    user = db.session.get(User, user_id)
-    return render_template('main/index.html', user=user)
+@app.errorhandler(404)
+def not_found(e):
+    return render_template('errors/404.html'), 404
 
 if __name__ == '__main__':
     with app.app_context():
