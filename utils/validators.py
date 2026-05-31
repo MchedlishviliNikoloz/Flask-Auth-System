@@ -18,6 +18,8 @@ PASSWORD_ERROR_MSGS = {
     "no_uppercase": "Password must contain at least one uppercase letter.",
     "no_number": "Password must contain at least one number."
 }
+TRUE_VALUES = ["1", "true", "yes", "on", "t"]
+FALSE_VALUES = ["0", "false", "no", "off", "f"]
 disallowed_special_chars = [
     '!', '@', '#', '$', '%', '^', '&', '*', '(', ')',
     '+', '=', '[', ']', '{', '}', ';', ':', "'", '"', '\\',
@@ -100,3 +102,23 @@ def validate_password(password: str, username: str) -> dict:
         errors.append(PASSWORD_ERROR_MSGS["no_number"])
 
     return {"success": not errors, "errors": errors}
+
+def normalize_bool(value):
+    if isinstance(value, bool):
+        return value
+
+    if isinstance(value, int):
+        if value == 1 or value == 0:
+            return bool(value)
+        else:
+            raise ValueError(f"Invalid boolean value: {value}")
+
+    if isinstance(value, str):
+        v = value.lower().strip()
+
+        if v in TRUE_VALUES:
+            return True
+        if v in FALSE_VALUES:
+            return False
+
+    raise ValueError(f"Invalid boolean value: {value}")
