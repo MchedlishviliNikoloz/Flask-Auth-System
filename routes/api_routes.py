@@ -3,7 +3,7 @@ from models.user import User
 from database import db
 from models.profile import Profile
 from services import register_user, authenticate_user, username_exists, email_exists
-from services import update_general, update_contact, update_password, delete_profile
+from services import update_general, update_contact, update_password, delete_profile, update_privacy
 
 api_bp = Blueprint('api', __name__)
 
@@ -134,6 +134,21 @@ def api_profile_password():
         return {"success": False, "errors": result['errors']}, 400
 
     return {"success": True, "message": "Password updated successfully."}, 200
+
+@api_bp.route('/api/profile/privacy', methods=['POST'])
+def profile_privacy():
+    if not session.get('user_id'):
+        return {"success": False, "errors": ["No active session found."]}, 400
+    data = request.json
+
+    user_id = session.get('user_id')
+    is_public = data.get('is_public')
+    result = update_privacy(user_id, is_public)
+
+    if not result['success']:
+        return {"success": False, "errors": result['errors']}, 400
+
+    return {"success": True, "message": "Profile privacy updated successfully."}, 200
 
 @api_bp.route('/api/profile/delete', methods=['DELETE'])
 def api_profile_delete():
