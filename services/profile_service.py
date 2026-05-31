@@ -1,7 +1,7 @@
 from models.user import User
 from database import db
 from services import username_exists, email_exists
-from utils.validators import validate_username, validate_email, validate_password
+from utils.validators import validate_username, validate_email, validate_password, normalize_bool
 
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -84,6 +84,11 @@ def update_privacy(user_id: int, is_public: bool) -> dict:
     user = db.session.get(User, user_id)
     if not user:
         return {"success": False, "errors": ["User not found."]}
+
+    try:
+        is_public = normalize_bool(is_public)
+    except ValueError:
+        return {"success": False, "errors": ["Invalid is_public value."]}
 
     if user.profile.is_public == is_public:
         return {"success": False, "errors": ["Make some changes before save."]}
