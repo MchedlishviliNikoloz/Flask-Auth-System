@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
     <style>
         :root {
             --ink:        #1a1a1a;
@@ -37,23 +38,7 @@
             color: var(--ink);
         }
 
-        /* ── Navbar ── */
-        .navbar {
-            position: sticky; top: 0; z-index: 100;
-            width: 100%; padding: 0 40px; height: 64px;
-            background: rgba(255,255,255,0.85);
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border);
-            display: flex; justify-content: space-between; align-items: center;
-            opacity: 0; animation: fadeDown 0.45s 0.05s ease forwards;
-        }
-        .logo {
-            font-family: 'DM Serif Display', serif;
-            font-size: 17px; color: var(--ink);
-            letter-spacing: 0.02em; text-decoration: none;
-        }
-        .nav-right { display: flex; align-items: center; gap: 10px; }
-        .nav-btn {
+        .own-privacy-btn {
             display: flex; align-items: center; gap: 6px;
             font-size: 13.5px; font-weight: 500; color: var(--ink-muted);
             text-decoration: none; padding: 7px 14px;
@@ -61,12 +46,7 @@
             background: var(--surface); box-shadow: var(--shadow-sm);
             transition: color var(--transition), box-shadow var(--transition);
         }
-        .nav-btn:hover { color: var(--ink); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .nav-btn-filled {
-            background: var(--accent); color: var(--accent-fg);
-            border-color: var(--accent);
-        }
-        .nav-btn-filled:hover { color: var(--accent-fg); opacity: 0.88; }
+        .own-privacy-btn:hover { color: var(--ink); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
 
         /* ── Page ── */
         .page {
@@ -251,52 +231,104 @@
 <body>
 
 <nav class="navbar">
-    <a href="{{ url_for('main.home') }}" class="logo">FlaskAuth</a>
+    <div class="logo">FlaskAuth</div>
+
     <div class="nav-right">
+
         {% if session.get('user_id') %}
-            <a href="{{ url_for('main.home') }}" class="nav-btn">Home</a>
-            <a href="{{ url_for('profile.profile') }}" class="nav-btn">Settings</a>
+
+        <!-- ========== LOGGED IN USER ========== -->
+        <div class="user-menu" id="userMenu">
+
+            <!-- Badge trigger -->
+            <div class="user-badge" id="userBadge" role="button" aria-haspopup="true" aria-expanded="false">
+                <div class="user-avatar">{{ user.username[0] | upper }}</div>
+                <span class="user-badge-name">{{ user.username }}</span>
+                <svg class="user-badge-chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 7.5l5 5 5-5"/>
+                </svg>
+            </div>
+
+            <!-- Dropdown panel -->
+            <div class="user-dropdown" id="userDropdown" role="menu">
+
+                <div class="dropdown-header">
+                    <div class="dropdown-header-name">
+                        {{ user.profile.first_name or user.username }}
+                        {{ user.profile.last_name or '' }}
+                    </div>
+                </div>
+
+                <div class="dropdown-section">
+
+                    <a href="{{ url_for('profile.profile') }}" class="dropdown-item" role="menuitem">
+                        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="10" cy="7" r="3.5"/>
+                            <path d="M3 18c0-3.5 3-6 7-6s7 2.5 7 6"/>
+                        </svg>
+                        Profile
+                    </a>
+
+                    <a href="{{ url_for('auth.logout') }}" class="dropdown-item danger" role="menuitem">
+                        <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M13 15l4-5-4-5"/>
+                            <path d="M17 10H7"/>
+                            <path d="M7 3H4a1 1 0 00-1 1v12a1 1 0 001 1h3"/>
+                        </svg>
+                        Sign out
+                    </a>
+
+                </div>
+            </div>
+        </div>
+
         {% else %}
-            <a href="{{ url_for('auth.login') }}" class="nav-btn">Sign in</a>
-            <a href="{{ url_for('auth.register') }}" class="nav-btn nav-btn-filled">Create account</a>
+
+        <!-- ========== GUEST USER ========== -->
+        <div class="guest-menu">
+            <a href="{{ url_for('auth.login') }}" class="guest-btn">Login</a>
+            <a href="{{ url_for('auth.register') }}" class="guest-btn primary">Register</a>
+        </div>
+
         {% endif %}
+
     </div>
 </nav>
 
 <div class="page">
 
-{% set is_own = session.get('user_id') == user.id %}
-{% set show_full = user.profile.is_public or is_own %}
+{% set is_own = session.get('user_id') == searched_user.id %}
+{% set show_full = searched_user.profile.is_public or is_own %}
 
 {% if show_full %}
 
     <!-- ── FULL PROFILE ── -->
 
-    {% if is_own and not user.profile.is_public %}
+    {% if is_own and not searched_user.profile.is_public %}
     <div class="own-private-notice">
         <div class="own-private-notice-text">
             <strong>Your profile is private.</strong> Only you can see this page. Others see a locked version.
         </div>
-        <a href="{{ url_for('profile.profile') }}" class="nav-btn" style="font-size:13px;padding:6px 12px;white-space:nowrap;">Change in settings</a>
+        <a href="{{ url_for('profile.profile') }}" class="own-privacy-btn" style="font-size:13px;padding:6px 12px;white-space:nowrap;">Change in settings</a>
     </div>
     {% endif %}
 
     <div class="hero">
         <div class="avatar-wrap">
-            <div class="avatar">{{ user.username[0] | upper }}</div>
+            <div class="avatar">{{ searched_user.username[0] | upper }}</div>
         </div>
         <div class="hero-info">
-            {% set full_name = ((user.profile.first_name or '') + ' ' + (user.profile.last_name or '')).strip() %}
+            {% set full_name = ((searched_user.profile.first_name or '') + ' ' + (searched_user.profile.last_name or '')).strip() %}
             {% if full_name %}
                 <div class="hero-name">{{ full_name }}</div>
-                <div class="hero-handle">@{{ user.username }}</div>
+                <div class="hero-handle">@{{ searched_user.username }}</div>
             {% else %}
-                <div class="hero-name">{{ user.username }}</div>
-                <div class="hero-handle">@{{ user.username }}</div>
+                <div class="hero-name">{{ searched_user.username }}</div>
+                <div class="hero-handle">@{{ searched_user.username }}</div>
             {% endif %}
 
-            {% if user.profile.bio %}
-                <div class="hero-bio">{{ user.profile.bio }}</div>
+            {% if searched_user.profile.bio %}
+                <div class="hero-bio">{{ searched_user.profile.bio }}</div>
             {% endif %}
 
             <div class="hero-meta">
@@ -305,7 +337,7 @@
                         <rect x="3" y="4" width="14" height="13" rx="2"/>
                         <path d="M7 2v4M13 2v4M3 9h14"/>
                     </svg>
-                    Member since {{ user.created_at.strftime('%B %Y') }}
+                    Member since {{ searched_user.created_at.strftime('%B %Y') }}
                 </div>
 
                 {% if is_own %}
@@ -331,7 +363,7 @@
                 </svg>
             </div>
             <div class="info-label">Username</div>
-            <div class="info-value">@{{ user.username }}</div>
+            <div class="info-value">@{{ searched_user.username }}</div>
         </div>
 
         {% if full_name %}
@@ -355,7 +387,7 @@
                 </svg>
             </div>
             <div class="info-label">Member Since</div>
-            <div class="info-value">{{ user.created_at.strftime('%b %Y') }}</div>
+            <div class="info-value">{{ searched_user.created_at.strftime('%b %Y') }}</div>
         </div>
     </div>
 
@@ -365,7 +397,7 @@
 
     <div class="private-hero">
         <div class="avatar-wrap">
-            <div class="avatar">{{ user.username[0] | upper }}</div>
+            <div class="avatar">{{ searched_user.username[0] | upper }}</div>
         </div>
         <div class="private-info">
             <div class="private-badge">
@@ -375,7 +407,7 @@
                 </svg>
                 Private account
             </div>
-            <div class="hero-name">@{{ user.username }}</div>
+            <div class="hero-name">@{{ searched_user.username }}</div>
         </div>
     </div>
 
@@ -388,7 +420,7 @@
         </div>
         <div class="private-card-title">This account is private.</div>
         <div class="private-card-desc">
-            @{{ user.username }} has chosen to keep their profile private.
+            @{{ searched_user.username }} has chosen to keep their profile private.
             Their information is not visible to others.
         </div>
     </div>
@@ -396,5 +428,6 @@
 {% endif %}
 
 </div>
+<script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
 </body>
 </html>
