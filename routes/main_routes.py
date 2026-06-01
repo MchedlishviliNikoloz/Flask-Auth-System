@@ -20,7 +20,12 @@ def home():
 
 @main_bp.route('/u/<username>')
 def user_profile(username):
-    user = get_user_by_username(username)
-    if not user:
+    logged_user = None
+    if session.get('user_id'):
+        user_id = session.get('user_id')
+        logged_user = db.session.get(User, user_id)
+
+    searched_user = get_user_by_username(username)
+    if not searched_user:
         return render_template('errors/404.html'), 404
-    return render_template('main/user.html', user=user)
+    return render_template('main/user.html', searched_user=searched_user, user=logged_user)
