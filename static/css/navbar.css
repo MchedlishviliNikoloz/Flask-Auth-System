@@ -1,0 +1,238 @@
+/* ── Navbar ── */
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    width: 100%;
+    padding: 0 40px;
+    height: 64px;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    opacity: 0;
+    animation: fadeDown 0.45s 0.05s ease forwards;
+}
+
+.logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 17px;
+    font-weight: 400;
+    color: var(--ink);
+    letter-spacing: 0.02em;
+}
+
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 7px 14px 7px 8px;
+    border-radius: 999px;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow var(--transition);
+}
+
+.user-badge:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.user-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Serif Display', serif;
+    font-size: 12px;
+    color: var(--accent-fg);
+    flex-shrink: 0;
+}
+
+.user-badge-name {
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--ink);
+}
+
+/* Chevron inside badge */
+.user-badge-chevron {
+    width: 14px;
+    height: 14px;
+    color: var(--ink-muted);
+    transition: transform var(--transition);
+    flex-shrink: 0;
+}
+
+/* ── Dropdown wrapper ── */
+.user-menu {
+    position: relative;
+}
+
+.user-badge {
+    cursor: pointer;
+    user-select: none;
+}
+
+/* Open state: rotate chevron */
+.user-menu.open .user-badge-chevron {
+    transform: rotate(180deg);
+}
+
+/* Dropdown panel */
+.user-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    min-width: 200px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.04), 0 12px 32px rgba(0,0,0,0.10);
+    overflow: hidden;
+    z-index: 300;
+    animation: dropIn 0.18s ease both;
+}
+
+.user-menu.open .user-dropdown {
+    display: block;
+}
+
+@keyframes dropIn {
+    from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+
+/* Dropdown header */
+.dropdown-header {
+    padding: 14px 16px 12px;
+    border-bottom: 1px solid var(--border);
+}
+
+.dropdown-header-name {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 2px;
+}
+
+.dropdown-header-email {
+    font-size: 12px;
+    color: var(--ink-muted);
+    word-break: break-all;
+}
+
+/* Dropdown items */
+.dropdown-section {
+    padding: 6px;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 9px 10px;
+    background: none;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--ink-soft);
+    text-decoration: none;
+    cursor: pointer;
+    transition: background var(--transition), color var(--transition);
+    text-align: left;
+}
+
+.dropdown-item:hover {
+    background: var(--canvas);
+    color: var(--ink);
+}
+
+.dropdown-item svg {
+    flex-shrink: 0;
+    color: var(--ink-muted);
+}
+
+/* Danger item (logout) */
+.dropdown-item.danger {
+    color: #b91c1c;
+}
+
+.dropdown-item.danger svg {
+    color: #b91c1c;
+}
+
+.dropdown-item.danger:hover {
+    background: #fff5f5;
+    color: #991b1b;
+}
+
+/* Divider inside dropdown */
+.dropdown-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 2px 0;
+}
+
+.guest-menu {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Base button style (matches navbar aesthetic) */
+.guest-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 7px 14px;
+    border-radius: 999px;
+
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13.5px;
+    font-weight: 500;
+    text-decoration: none;
+
+    color: var(--ink-soft);
+    background: var(--surface);
+    border: 1px solid var(--border);
+
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow var(--transition), background var(--transition), color var(--transition);
+}
+
+/* hover effect (same style language as user-badge) */
+.guest-btn:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    color: var(--ink);
+}
+
+/* Primary button (Register) */
+.guest-btn.primary {
+    background: var(--accent);
+    color: var(--accent-fg);
+    border: 1px solid var(--accent);
+}
+
+/* primary hover */
+.guest-btn.primary:hover {
+    opacity: 0.92;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+}
