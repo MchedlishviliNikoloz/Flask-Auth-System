@@ -12,8 +12,9 @@ class User(db.Model):
     username: Mapped[str] = mapped_column(unique=True, nullable=False)
     email: Mapped[str] = mapped_column(unique=True, nullable=False)
     password: Mapped[str] = mapped_column(nullable=False)
-    created_at: Mapped[datetime] = mapped_column(default=datetime.now(timezone.utc))
-
+    created_at: Mapped[datetime] = mapped_column(
+        default=lambda: datetime.now(timezone.utc)
+    )
     def to_dict(self):
         return {
             "id": self.id,

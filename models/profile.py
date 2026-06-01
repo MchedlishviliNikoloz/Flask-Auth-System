@@ -16,10 +16,12 @@ class Profile(db.Model):
     last_name: Mapped[str] = mapped_column(nullable=True)
     bio: Mapped[str] = mapped_column(nullable=True)
     is_public: Mapped[bool] = mapped_column(default=True, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(default=datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        default=lambda: datetime.now(timezone.utc)
+    )
     updated_at: Mapped[datetime] = mapped_column(
-        default=datetime.now(timezone.utc),
-        onupdate=datetime.now(timezone.utc)
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc)
     )
 
     def to_dict(self):
