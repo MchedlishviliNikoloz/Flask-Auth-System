@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>@{{ user.username }} — FlaskAuth</title>
+    <title>@{{ searched_user.username }} — FlaskAuth</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
@@ -23,6 +23,7 @@
             --radius-lg:  20px;
             --shadow-sm:  0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.06);
             --shadow-card:0 2px 4px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.07);
+            --shadow-modal:0 8px 32px rgba(0,0,0,0.16), 0 2px 8px rgba(0,0,0,0.08);
             --transition: 180ms cubic-bezier(0.4,0,0.2,1);
         }
 
@@ -38,16 +39,6 @@
             color: var(--ink);
         }
 
-        .own-privacy-btn {
-            display: flex; align-items: center; gap: 6px;
-            font-size: 13.5px; font-weight: 500; color: var(--ink-muted);
-            text-decoration: none; padding: 7px 14px;
-            border: 1px solid var(--border); border-radius: 999px;
-            background: var(--surface); box-shadow: var(--shadow-sm);
-            transition: color var(--transition), box-shadow var(--transition);
-        }
-        .own-privacy-btn:hover { color: var(--ink); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-
         /* ── Page ── */
         .page {
             max-width: 860px;
@@ -55,12 +46,12 @@
             padding: 52px 24px 80px;
         }
 
-        /* ── Hero section ── */
+        /* ── Hero ── */
         .hero {
             display: flex;
             align-items: flex-start;
             gap: 32px;
-            margin-bottom: 40px;
+            margin-bottom: 32px;
             opacity: 0;
             animation: fadeUp 0.5s 0.1s ease forwards;
         }
@@ -78,52 +69,113 @@
 
         .hero-info { flex: 1; padding-top: 4px; }
 
-        .hero-name {
-            font-family: 'DM Serif Display', serif;
-            font-size: 36px; font-weight: 400;
-            color: var(--ink); line-height: 1.1;
+        /* name + follow button row */
+        .hero-top-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
             margin-bottom: 4px;
         }
+
+        .hero-name {
+            font-family: 'DM Serif Display', serif;
+            font-size: 32px; font-weight: 400;
+            color: var(--ink); line-height: 1.1;
+        }
         .hero-handle {
-            font-size: 15px; color: var(--ink-muted);
-            margin-bottom: 16px;
+            font-size: 14px; color: var(--ink-muted);
+            margin-bottom: 14px;
         }
         .hero-bio {
             font-size: 15px; color: var(--ink-soft);
             line-height: 1.65; max-width: 520px;
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
 
-        .hero-meta {
-            display: flex; align-items: center;
-            gap: 20px; flex-wrap: wrap;
+        /* ── Stats row (followers/following/joined) ── */
+        .hero-stats {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
         }
-        .meta-item {
-            display: flex; align-items: center; gap: 7px;
-            font-size: 13px; color: var(--ink-muted);
-        }
-        .meta-item svg { flex-shrink: 0; opacity: 0.7; }
 
-        /* Own-profile notice */
-        .own-notice {
-            display: inline-flex; align-items: center; gap: 7px;
-            padding: 7px 13px;
+        .stat-btn {
+            display: flex; align-items: center; gap: 5px;
+            padding: 5px 12px;
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 999px;
-            font-size: 13px; color: var(--ink-soft);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px; cursor: pointer;
             box-shadow: var(--shadow-sm);
-            text-decoration: none;
-            transition: box-shadow var(--transition), color var(--transition);
+            transition: box-shadow var(--transition), border-color var(--transition);
+            text-decoration: none; color: var(--ink);
         }
-        .own-notice:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); color: var(--ink); }
+        .stat-btn:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.10); border-color: #ccc; }
+        .stat-btn.plain { cursor: default; }
+        .stat-btn.plain:hover { box-shadow: var(--shadow-sm); border-color: var(--border); }
+
+        .stat-num {
+            font-weight: 700;
+            font-size: 13.5px;
+            color: var(--ink);
+        }
+        .stat-label {
+            color: var(--ink-muted);
+        }
+
+        .stat-divider {
+            width: 3px; height: 3px; border-radius: 50%;
+            background: var(--border); flex-shrink: 0;
+        }
+
+        /* ── Follow button ── */
+        .follow-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 18px;
+            border: none; border-radius: 999px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13.5px; font-weight: 600;
+            cursor: pointer;
+            transition: opacity var(--transition), transform var(--transition), background var(--transition), color var(--transition), border-color var(--transition);
+        }
+        .follow-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+        .follow-btn:active { transform: translateY(0); }
+
+        .follow-btn.state-follow {
+            background: var(--accent); color: var(--accent-fg);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .follow-btn.state-following {
+            background: var(--surface); color: var(--ink);
+            border: 1.5px solid var(--border);
+            box-shadow: var(--shadow-sm);
+        }
+        .follow-btn.state-following:hover {
+            background: #fff5f5; color: #b91c1c;
+            border-color: #f5c6c6;
+        }
+
+        /* Edit profile link */
+        .edit-profile-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 7px 14px;
+            background: var(--surface); color: var(--ink-soft);
+            border: 1.5px solid var(--border); border-radius: 999px;
+            font-size: 13px; font-weight: 500; text-decoration: none;
+            box-shadow: var(--shadow-sm);
+            transition: color var(--transition), box-shadow var(--transition);
+        }
+        .edit-profile-btn:hover { color: var(--ink); box-shadow: 0 2px 8px rgba(0,0,0,0.10); }
 
         /* ── Divider ── */
         .divider {
             height: 1px; background: var(--border);
-            margin: 0 0 36px;
-            opacity: 0;
-            animation: fadeUp 0.5s 0.18s ease forwards;
+            margin: 0 0 32px;
+            opacity: 0; animation: fadeUp 0.5s 0.18s ease forwards;
         }
 
         /* ── Info cards ── */
@@ -131,14 +183,11 @@
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 14px;
-            opacity: 0;
-            animation: fadeUp 0.5s 0.22s ease forwards;
+            opacity: 0; animation: fadeUp 0.5s 0.22s ease forwards;
         }
         .info-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            padding: 20px 22px;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius-md); padding: 20px 22px;
             box-shadow: var(--shadow-sm);
         }
         .info-card-icon {
@@ -157,29 +206,44 @@
             color: var(--ink); word-break: break-word;
         }
 
-        /* ── Private state ── */
+        /* ── Own private notice ── */
+        .own-private-notice {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius-md); padding: 14px 18px;
+            display: flex; align-items: center;
+            justify-content: space-between; gap: 16px;
+            box-shadow: var(--shadow-sm); margin-bottom: 24px;
+            opacity: 0; animation: fadeUp 0.5s 0.05s ease forwards;
+        }
+        .own-private-notice-text { font-size: 13.5px; color: var(--ink-soft); }
+        .own-private-notice-text strong { color: var(--ink); }
+        .own-privacy-btn {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 13px; font-weight: 500; color: var(--ink-muted);
+            text-decoration: none; padding: 6px 12px; white-space: nowrap;
+            border: 1px solid var(--border); border-radius: 999px;
+            background: var(--surface); box-shadow: var(--shadow-sm);
+            transition: color var(--transition), box-shadow var(--transition);
+        }
+        .own-privacy-btn:hover { color: var(--ink); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+        /* ── Private profile ── */
         .private-hero {
             display: flex; align-items: flex-start; gap: 32px;
-            margin-bottom: 40px;
+            margin-bottom: 32px;
             opacity: 0; animation: fadeUp 0.5s 0.1s ease forwards;
         }
-
         .private-info { flex: 1; padding-top: 4px; }
         .private-badge {
             display: inline-flex; align-items: center; gap: 6px;
-            padding: 4px 10px;
-            background: var(--canvas); border: 1px solid var(--border);
+            padding: 4px 10px; background: var(--canvas); border: 1px solid var(--border);
             border-radius: 999px; font-size: 12px; font-weight: 500;
             color: var(--ink-muted); margin-bottom: 10px;
         }
-
         .private-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-card);
-            padding: 44px 36px;
-            text-align: center;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius-lg); box-shadow: var(--shadow-card);
+            padding: 44px 36px; text-align: center;
             opacity: 0; animation: fadeUp 0.5s 0.18s ease forwards;
         }
         .private-card-icon {
@@ -190,32 +254,126 @@
         }
         .private-card-title {
             font-family: 'DM Serif Display', serif;
-            font-size: 22px; font-weight: 400;
-            color: var(--ink); margin-bottom: 8px;
+            font-size: 22px; font-weight: 400; color: var(--ink); margin-bottom: 8px;
         }
         .private-card-desc {
             font-size: 14px; color: var(--ink-muted);
-            line-height: 1.65; max-width: 340px; margin: 0 auto;
+            line-height: 1.65; max-width: 340px; margin: 0 auto 24px;
         }
 
-        /* ── Own private notice ── */
-        .own-private-notice {
+        /* ── Followers/Following Modal ── */
+        .modal-overlay {
+            position: fixed; inset: 0; z-index: 500;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(4px);
+            display: flex; align-items: center; justify-content: center;
+            padding: 24px;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.22s ease;
+        }
+        .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+        .modal {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            padding: 16px 20px;
-            display: flex; align-items: center;
-            justify-content: space-between; gap: 16px;
-            box-shadow: var(--shadow-sm);
-            margin-bottom: 28px;
-            opacity: 0; animation: fadeUp 0.5s 0.12s ease forwards;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-modal);
+            width: 100%; max-width: 400px;
+            max-height: 80vh;
+            display: flex; flex-direction: column;
+            transform: translateY(12px) scale(0.98);
+            transition: transform 0.22s ease;
+            overflow: hidden;
         }
-        .own-private-notice-text { font-size: 13.5px; color: var(--ink-soft); }
-        .own-private-notice-text strong { color: var(--ink); font-weight: 600; }
+        .modal-overlay.open .modal { transform: translateY(0) scale(1); }
+
+        .modal-header {
+            padding: 18px 20px 14px;
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            flex-shrink: 0;
+        }
+        .modal-title {
+            font-family: 'DM Serif Display', serif;
+            font-size: 18px; font-weight: 400; color: var(--ink);
+        }
+        .modal-close {
+            background: none; border: none; cursor: pointer; padding: 4px;
+            color: var(--ink-muted); border-radius: 6px;
+            transition: color var(--transition), background var(--transition);
+        }
+        .modal-close:hover { color: var(--ink); background: var(--canvas); }
+
+        /* Scrollable list */
+        .modal-list {
+            overflow-y: auto;
+            flex: 1;
+            padding: 8px 0;
+        }
+
+        /* Custom scrollbar */
+        .modal-list::-webkit-scrollbar { width: 4px; }
+        .modal-list::-webkit-scrollbar-track { background: transparent; }
+        .modal-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+        .user-row {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 20px;
+            transition: background var(--transition);
+            text-decoration: none; color: inherit;
+        }
+        .user-row:hover { background: var(--canvas); }
+
+        .user-row-avatar {
+            width: 38px; height: 38px; border-radius: 50%;
+            background: var(--accent); color: var(--accent-fg);
+            font-family: 'DM Serif Display', serif; font-size: 15px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .user-row-info { flex: 1; min-width: 0; }
+        .user-row-name {
+            font-size: 14px; font-weight: 600; color: var(--ink);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .user-row-handle {
+            font-size: 12.5px; color: var(--ink-muted);
+        }
+
+        /* Load more / spinner */
+        .modal-footer {
+            padding: 12px 20px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .load-more-btn {
+            background: none; border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm); padding: 7px 20px;
+            font-family: 'DM Sans', sans-serif; font-size: 13px;
+            font-weight: 500; color: var(--ink-soft); cursor: pointer;
+            transition: background var(--transition), color var(--transition);
+        }
+        .load-more-btn:hover { background: var(--canvas); color: var(--ink); }
+        .load-more-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .modal-empty {
+            padding: 40px 20px; text-align: center;
+            font-size: 14px; color: var(--ink-muted);
+        }
+
+        .spinner {
+            display: inline-block; width: 18px; height: 18px;
+            border: 2px solid var(--border);
+            border-top-color: var(--ink-muted);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
 
         /* ── Animations ── */
         @keyframes fadeUp   { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
         @keyframes fadeDown { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes spin     { to{ transform: rotate(360deg); } }
 
         @media(max-width:640px) {
             .navbar { padding: 0 20px; }
@@ -224,23 +382,20 @@
             .private-hero { flex-direction: column; gap: 20px; }
             .info-grid { grid-template-columns: 1fr; }
             .avatar { width: 80px; height: 80px; font-size: 30px; }
-            .hero-name { font-size: 28px; }
+            .hero-name { font-size: 26px; }
+            .own-private-notice { flex-direction: column; align-items: flex-start; }
+            .modal { max-width: 100%; max-height: 90vh; }
         }
     </style>
 </head>
 <body>
 
+<!-- ── Navbar ── -->
 <nav class="navbar">
     <div class="logo">FlaskAuth</div>
-
     <div class="nav-right">
-
         {% if session.get('user_id') %}
-
-        <!-- ========== LOGGED IN USER ========== -->
         <div class="user-menu" id="userMenu">
-
-            <!-- Badge trigger -->
             <div class="user-badge" id="userBadge" role="button" aria-haspopup="true" aria-expanded="false">
                 <div class="user-avatar">{{ user.username[0] | upper }}</div>
                 <span class="user-badge-name">{{ user.username }}</span>
@@ -248,19 +403,14 @@
                     <path d="M5 7.5l5 5 5-5"/>
                 </svg>
             </div>
-
-            <!-- Dropdown panel -->
             <div class="user-dropdown" id="userDropdown" role="menu">
-
                 <div class="dropdown-header">
                     <div class="dropdown-header-name">
                         {{ user.profile.first_name or user.username }}
                         {{ user.profile.last_name or '' }}
                     </div>
                 </div>
-
                 <div class="dropdown-section">
-
                     <a href="{{ url_for('profile.profile') }}" class="dropdown-item" role="menuitem">
                         <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="10" cy="7" r="3.5"/>
@@ -268,48 +418,78 @@
                         </svg>
                         Profile
                     </a>
-
                     <a href="{{ url_for('auth.logout') }}" class="dropdown-item danger" role="menuitem">
                         <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M13 15l4-5-4-5"/>
-                            <path d="M17 10H7"/>
+                            <path d="M13 15l4-5-4-5"/><path d="M17 10H7"/>
                             <path d="M7 3H4a1 1 0 00-1 1v12a1 1 0 001 1h3"/>
                         </svg>
                         Sign out
                     </a>
-
                 </div>
             </div>
         </div>
-
         {% else %}
-
-        <!-- ========== GUEST USER ========== -->
         <div class="guest-menu">
             <a href="{{ url_for('auth.login') }}" class="guest-btn">Login</a>
             <a href="{{ url_for('auth.register') }}" class="guest-btn primary">Register</a>
         </div>
-
         {% endif %}
-
     </div>
 </nav>
 
+<!-- ── Followers Modal ── -->
+<div class="modal-overlay" id="followersModal">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title">Followers</span>
+            <button class="modal-close" onclick="closeModal('followersModal')">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 5l10 10M15 5L5 15"/>
+                </svg>
+            </button>
+        </div>
+        <div class="modal-list" id="followersList"></div>
+        <div class="modal-footer" id="followersFooter" style="display:none;">
+            <button class="load-more-btn" id="followersLoadMore" onclick="loadMore('followers')">Load more</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Following Modal ── -->
+<div class="modal-overlay" id="followingModal">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title">Following</span>
+            <button class="modal-close" onclick="closeModal('followingModal')">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 5l10 10M15 5L5 15"/>
+                </svg>
+            </button>
+        </div>
+        <div class="modal-list" id="followingList"></div>
+        <div class="modal-footer" id="followingFooter" style="display:none;">
+            <button class="load-more-btn" id="followingLoadMore" onclick="loadMore('following')">Load more</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Page ── -->
 <div class="page">
 
 {% set is_own = session.get('user_id') == searched_user.id %}
 {% set show_full = searched_user.profile.is_public or is_own %}
 
-{% if show_full %}
+{% set followers_count = searched_user.followers | length %}
+{% set following_count = searched_user.following | length %}
 
-    <!-- ── FULL PROFILE ── -->
+{% if show_full %}
 
     {% if is_own and not searched_user.profile.is_public %}
     <div class="own-private-notice">
         <div class="own-private-notice-text">
             <strong>Your profile is private.</strong> Only you can see this page. Others see a locked version.
         </div>
-        <a href="{{ url_for('profile.profile') }}" class="own-privacy-btn" style="font-size:13px;padding:6px 12px;white-space:nowrap;">Change in settings</a>
+        <a href="{{ url_for('profile.profile') }}" class="own-privacy-btn">Change in settings</a>
     </div>
     {% endif %}
 
@@ -319,35 +499,61 @@
         </div>
         <div class="hero-info">
             {% set full_name = ((searched_user.profile.first_name or '') + ' ' + (searched_user.profile.last_name or '')).strip() %}
-            {% if full_name %}
-                <div class="hero-name">{{ full_name }}</div>
-                <div class="hero-handle">@{{ searched_user.username }}</div>
-            {% else %}
-                <div class="hero-name">{{ searched_user.username }}</div>
-                <div class="hero-handle">@{{ searched_user.username }}</div>
-            {% endif %}
+
+            <div class="hero-top-row">
+                {% if full_name %}
+                    <div class="hero-name">{{ full_name }}</div>
+                {% else %}
+                    <div class="hero-name">{{ searched_user.username }}</div>
+                {% endif %}
+
+                {% if not is_own and session.get('user_id') %}
+                    <button
+                        class="follow-btn"
+                        id="followBtn"
+                        data-username="{{ searched_user.username }}"
+                        data-state=""
+                        onclick="toggleFollow(this)"
+                    >
+                        <span class="spinner"></span>
+                    </button>
+                {% endif %}
+
+                {% if is_own %}
+                    <a href="{{ url_for('profile.profile') }}" class="edit-profile-btn">
+                        <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2l4 4-10 10H4v-4L14 2z"/>
+                        </svg>
+                        Edit profile
+                    </a>
+                {% endif %}
+            </div>
+
+            <div class="hero-handle">@{{ searched_user.username }}</div>
 
             {% if searched_user.profile.bio %}
                 <div class="hero-bio">{{ searched_user.profile.bio }}</div>
             {% endif %}
 
-            <div class="hero-meta">
-                <div class="meta-item">
-                    <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <!-- Stats row -->
+            <div class="hero-stats">
+                <button class="stat-btn" onclick="openModal('followersModal', 'followers')">
+                    <span class="stat-num" id="followersCount">{{ followers_count }}</span>
+                    <span class="stat-label">followers</span>
+                </button>
+                <div class="stat-divider"></div>
+                <button class="stat-btn" onclick="openModal('followingModal', 'following')">
+                    <span class="stat-num" id="followingCount">{{ following_count }}</span>
+                    <span class="stat-label">following</span>
+                </button>
+                <div class="stat-divider"></div>
+                <div class="stat-btn plain">
+                    <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.5">
                         <rect x="3" y="4" width="14" height="13" rx="2"/>
                         <path d="M7 2v4M13 2v4M3 9h14"/>
                     </svg>
-                    Member since {{ searched_user.created_at.strftime('%B %Y') }}
+                    <span class="stat-label">{{ searched_user.created_at.strftime('%b %Y') }}</span>
                 </div>
-
-                {% if is_own %}
-                <a href="{{ url_for('profile.profile') }}" class="own-notice">
-                    <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M14 2l4 4-10 10H4v-4L14 2z"/>
-                    </svg>
-                    Edit profile
-                </a>
-                {% endif %}
             </div>
         </div>
     </div>
@@ -393,8 +599,7 @@
 
 {% else %}
 
-    <!-- ── PRIVATE PROFILE ── -->
-
+    <!-- ── PRIVATE ── -->
     <div class="private-hero">
         <div class="avatar-wrap">
             <div class="avatar">{{ searched_user.username[0] | upper }}</div>
@@ -407,7 +612,20 @@
                 </svg>
                 Private account
             </div>
-            <div class="hero-name">@{{ searched_user.username }}</div>
+            <div class="hero-top-row" style="margin-bottom:6px;">
+                <div class="hero-name">@{{ searched_user.username }}</div>
+                {% if session.get('user_id') %}
+                <button
+                    class="follow-btn"
+                    id="followBtn"
+                    data-username="{{ searched_user.username }}"
+                    data-state=""
+                    onclick="toggleFollow(this)"
+                >
+                    <span class="spinner"></span>
+                </button>
+                {% endif %}
+            </div>
         </div>
     </div>
 
@@ -428,6 +646,171 @@
 {% endif %}
 
 </div>
+
 <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
+<script>
+// ── Config ──────────────────────────────────────────────────
+const PAGE_SIZE     = 15;
+const TARGET        = "{{ searched_user.username }}";
+const IS_LOGGED_IN  = {{ 'true' if session.get('user_id') else 'false' }};
+
+// state for pagination
+const modalState = {
+    followers: { offset: 0, exhausted: false, loading: false },
+    following: { offset: 0, exhausted: false, loading: false },
+};
+
+// ── Follow / Unfollow ────────────────────────────────────────
+const btn = document.getElementById('followBtn');
+
+async function initFollowState() {
+    if (!btn || !IS_LOGGED_IN) return;
+    try {
+        const res  = await fetch(`/u/${TARGET}/follow-state`);
+        const data = await res.json();
+        applyFollowState(data.is_following);
+    } catch { btn.style.display = 'none'; }
+}
+
+function applyFollowState(isFollowing) {
+    if (!btn) return;
+    btn.dataset.state = isFollowing ? 'following' : 'follow';
+    btn.className = 'follow-btn ' + (isFollowing ? 'state-following' : 'state-follow');
+    btn.innerHTML = isFollowing
+        ? `<svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10l5 5 7-7"/></svg> Following`
+        : `<svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4v12M4 10h12"/></svg> Follow`;
+}
+
+async function toggleFollow(btn) {
+    const isFollowing = btn.dataset.state === 'following';
+    const action      = isFollowing ? 'unfollow' : 'follow';
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>';
+
+    try {
+        const res  = await fetch(`/u/${TARGET}/${action}`, { method: 'POST' });
+        const data = await res.json();
+
+        if (data.success) {
+            const nowFollowing = !isFollowing;
+            applyFollowState(nowFollowing);
+
+            // update counter
+            const counter = document.getElementById('followersCount');
+            if (counter) {
+                const n = parseInt(counter.textContent);
+                counter.textContent = nowFollowing ? n + 1 : Math.max(0, n - 1);
+            }
+        } else {
+            applyFollowState(isFollowing); // revert
+        }
+    } catch {
+        applyFollowState(isFollowing);
+    }
+    btn.disabled = false;
+}
+
+// ── Followers / Following Modal ──────────────────────────────
+function openModal(modalId, type) {
+    const overlay = document.getElementById(modalId);
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+
+    // load first batch if not loaded yet
+    const state = modalState[type];
+    if (state.offset === 0 && !state.loading) {
+        loadBatch(type);
+    }
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+async function loadBatch(type) {
+    const state    = modalState[type];
+    const listEl   = document.getElementById(type === 'followers' ? 'followersList' : 'followingList');
+    const footerEl = document.getElementById(type === 'followers' ? 'followersFooter' : 'followingFooter');
+    const loadBtn  = document.getElementById(type === 'followers' ? 'followersLoadMore' : 'followingLoadMore');
+
+    if (state.loading || state.exhausted) return;
+    state.loading = true;
+
+    // show spinner in list on first load
+    if (state.offset === 0) {
+        listEl.innerHTML = '<div class="modal-empty"><span class="spinner"></span></div>';
+    } else if (loadBtn) {
+        loadBtn.disabled = true;
+        loadBtn.textContent = 'Loading…';
+    }
+
+    try {
+        const res  = await fetch(`/api/u/${TARGET}/${type}?offset=${state.offset}&limit=${PAGE_SIZE}`);
+        const data = await res.json();
+        const users = data.users || [];
+
+        if (state.offset === 0) listEl.innerHTML = '';
+
+        if (users.length === 0 && state.offset === 0) {
+            listEl.innerHTML = `<div class="modal-empty">No ${type} yet.</div>`;
+            footerEl.style.display = 'none';
+        } else {
+            users.forEach(u => {
+                const a = document.createElement('a');
+                a.href = `/u/${u.username}`;
+                a.className = 'user-row';
+                a.innerHTML = `
+                    <div class="user-row-avatar">${u.username[0].toUpperCase()}</div>
+                    <div class="user-row-info">
+                        <div class="user-row-name">${u.display_name || u.username}</div>
+                        <div class="user-row-handle">@${u.username}</div>
+                    </div>`;
+                listEl.appendChild(a);
+            });
+
+            state.offset += users.length;
+
+            if (users.length < PAGE_SIZE) {
+                state.exhausted = true;
+                footerEl.style.display = 'none';
+            } else {
+                footerEl.style.display = 'block';
+                if (loadBtn) {
+                    loadBtn.disabled = false;
+                    loadBtn.textContent = 'Load more';
+                }
+            }
+        }
+    } catch {
+        listEl.innerHTML = '<div class="modal-empty">Failed to load. Try again.</div>';
+    }
+    state.loading = false;
+}
+
+function loadMore(type) {
+    loadBatch(type);
+}
+
+// close modals on overlay click
+document.getElementById('followersModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal('followersModal');
+});
+document.getElementById('followingModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal('followingModal');
+});
+
+// close on Escape
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+        closeModal('followersModal');
+        closeModal('followingModal');
+    }
+});
+
+// init
+initFollowState();
+</script>
 </body>
 </html>
