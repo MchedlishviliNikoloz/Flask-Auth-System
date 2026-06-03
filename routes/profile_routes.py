@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
 from models.user import User
 from database import db
-from services import update_general, update_contact, update_password, delete_profile, update_privacy
+from services import update_general, update_contact, update_password, delete_profile, update_privacy, follow_user, unfollow_user, get_follow_state, get_user_by_username
 
 profile_bp = Blueprint('profile', __name__)
 
@@ -13,7 +13,6 @@ def profile():
     user_id = session.get('user_id')
     user = db.session.get(User, user_id)
     return render_template('profile/profile.html', user=user)
-
 
 @profile_bp.route('/profile/general', methods=['POST'])
 def profile_general():
@@ -96,3 +95,44 @@ def profile_delete():
 
     session.clear()
     return redirect(url_for('auth.register'))
+
+@profile_bp.route('/u/<username>/follow', methods=['POST'])
+def follow(username):
+    if not session.get('user_id'):
+        return {"error": "Unauthorized"}
+
+    user_id = session.get('user_id')
+    target_user = get_user_by_username(username)
+
+    if not target_user:
+        return {"error": "User not found"}
+
+    result = follow_user(user_id, target_user.id)
+
+    return result
+
+@profile_bp.route('/u/<username>/unfollow', methods=['POST'])
+def unfollow(username):
+    if not session.get('user_id'):
+        return {"error": "Unauthorized"}
+
+    user_id = session.get('user_id')
+    target_user = get_user_by_username(username)
+
+    if not target_user:
+        return {"error": "User not found"}
+
+    result = unfollow_user(user_id, target_user.id)
+
+    return result
+
+@profile_bp.route("/u/<username>/follow-state", methods=["GET"])
+def follow_state(username):
+    user_id = session.get("user_id")
+
+    target_user = get_user_by_username(username)
+
+    if not target_user:
+        return {"error": "User not found"}
+
+    return get_follow_state(user_id, target_user.id)

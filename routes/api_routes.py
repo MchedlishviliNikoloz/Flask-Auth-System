@@ -3,7 +3,7 @@ from models.user import User
 from database import db
 from models.profile import Profile
 from services import register_user, authenticate_user, username_exists, email_exists
-from services import update_general, update_contact, update_password, delete_profile, update_privacy
+from services import update_general, update_contact, update_password, delete_profile, update_privacy, get_user_by_username
 
 api_bp = Blueprint('api', __name__)
 
@@ -181,3 +181,31 @@ def api_check_email():
         return {"available": False}, 400
     exists = email_exists(email)
     return {"available": not exists}, 200
+
+@api_bp.route('/api/u/<username>/followers', methods=['GET'])
+def api_followers(username):
+    user = get_user_by_username(username)
+    if not user:
+        return {"users": []}, 404
+    offset = int(request.args.get('offset', 0))
+    limit  = int(request.args.get('limit', 15))
+    follows = user.followers[offset:offset + limit]
+    users = [{
+        "username": f.follower.username,
+        "display_name": (f.follower.profile.first_name or '') + ' ' + (f.follower.profile.last_name or '')
+    } for f in follows]
+    return {"users": users}, 200
+
+@api_bp.route('/api/u/<username>/following', methods=['GET'])
+def api_following(username):
+    user = get_user_by_username(username)
+    if not user:
+        return {"users": []}, 404
+    offset = int(request.args.get('offset', 0))
+    limit  = int(request.args.get('limit', 15))
+    follows = user.following[offset:offset + limit]
+    users = [{
+        "username": f.followed.username,
+        "display_name": (f.followed.profile.first_name or '') + ' ' + (f.followed.profile.last_name or '')
+    } for f in follows]
+    return {"users": users}, 200
