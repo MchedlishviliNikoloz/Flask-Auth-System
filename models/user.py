@@ -21,6 +21,18 @@ class User(db.Model):
         back_populates="follower",
         cascade="all, delete-orphan"
     )
+    sent_requests: Mapped[list["FollowRequest"]] = relationship(
+        "FollowRequest",
+        foreign_keys="FollowRequest.requester_id",
+        back_populates="requester",
+        cascade="all, delete-orphan"
+    )
+    received_requests: Mapped[list["FollowRequest"]] = relationship(
+        "FollowRequest",
+        foreign_keys="FollowRequest.target_id",
+        back_populates="target",
+        cascade="all, delete-orphan"
+    )
     username: Mapped[str] = mapped_column(unique=True, nullable=False)
     email: Mapped[str] = mapped_column(unique=True, nullable=False)
     password: Mapped[str] = mapped_column(nullable=False)
