@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
 from models.user import User
 from database import db
-from services import update_general, update_contact, update_password, delete_profile, update_privacy, follow_user, unfollow_user, get_follow_state, get_user_by_username
+from services import (update_general, update_contact, update_password, delete_profile,
+                      update_privacy, follow_user, unfollow_user, get_follow_state, get_user_by_username, cancel_request as service_cancel_request)
 
 profile_bp = Blueprint('profile', __name__)
 
@@ -136,3 +137,18 @@ def follow_state(username):
         return {"error": "User not found"}
 
     return get_follow_state(user_id, target_user.id)
+
+@profile_bp.route("/u/<username>/cancel-request", methods=["POST"])
+def cancel_request(username):
+    if not session.get('user_id'):
+        return {"error": "Unauthorized"}
+
+    user_id = session.get('user_id')
+    target_user = get_user_by_username(username)
+
+    if not target_user:
+        return {"error": "User not found"}
+
+    result = service_cancel_request(user_id, target_user.id)
+
+    return result

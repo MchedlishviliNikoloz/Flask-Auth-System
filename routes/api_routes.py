@@ -3,7 +3,8 @@ from models.user import User
 from database import db
 from models.profile import Profile
 from services import register_user, authenticate_user, username_exists, email_exists
-from services import update_general, update_contact, update_password, delete_profile, update_privacy, get_user_by_username
+from services import (update_general, update_contact, update_password, delete_profile,
+                      update_privacy, get_user_by_username, accept_request, reject_request, get_pending_requests)
 
 api_bp = Blueprint('api', __name__)
 
@@ -209,3 +210,56 @@ def api_following(username):
         "display_name": (f.followed.profile.first_name or '') + ' ' + (f.followed.profile.last_name or '')
     } for f in follows]
     return {"users": users}, 200
+
+@api_bp.route('/api/u/<username>/accept-request', methods=['POST'])
+def api_accept_request(username):
+    if not session.get('user_id'):
+        return {"success": False, "errors": ["No active session found."]}, 400
+
+    requester = get_user_by_username(username)
+    if not requester:
+        return {"success": False, "errors": ["User not found"]}, 404
+
+    target_id = session.get('user_id')
+
+    result = accept_request(target_id, requester.id)
+
+    if not result["success"]:
+        return result, 400
+
+    return {"success": True, "message": "Request accepted."}, 200
+
+@api_bp.route('/api/u/<username>/reject-request', methods=['POST'])
+def api_reject_request(username):
+    if not session.get('user_id'):
+        return {"success": False, "errors": ["No active session found."]}, 400
+
+    requester = get_user_by_username(username)
+    if not requester:
+        return {"success": False, "errors": ["User not found"]}, 404
+
+    target_id = session.get('user_id')
+
+    result = reject_request(target_id, requester.id)
+
+    if not result["success"]:
+        return result, 400
+
+    return {"success": True, "message": "Request rejected."}, 200
+
+@api_bp.route('/api/me/pending-requests', methods=['GET'])
+def api_pending_requests():
+    if not session.get('user_id'):
+        return {"success": False, "errors": ["No active session found."]}, 401
+
+    user_id = session.get('user_id')
+
+    requests = get_pending_requests(user_id)
+
+    users = [{
+        "username": r.requester.username,
+        "display_name": (r.requester.profile.first_name or '') + ' ' + (r.requester.profile.last_name or ''),
+        "created_at": r.created_at.isoformat()
+    } for r in requests]
+
+    return {"success": True, "users": users}, 200
