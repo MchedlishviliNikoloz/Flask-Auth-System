@@ -272,7 +272,7 @@ def api_notifications():
 
     user_id = session.get('user_id')
     notifications = get_notifications(user_id)
-    mark_all_read(user_id)
+
     result = [{
         "id": n.id,
         "type": n.type,
@@ -281,6 +281,8 @@ def api_notifications():
         "is_read": n.is_read,
         "created_at": n.created_at.isoformat()
     } for n in notifications]
+
+    mark_all_read(user_id)
     return {"success": True, "notifications": result}, 200
 
 @api_bp.route('/api/notifications/unread-count', methods=['GET'])
