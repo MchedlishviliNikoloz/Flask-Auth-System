@@ -1,7 +1,7 @@
 from database import db
 from models import User, Follow
 from models.follow_request import FollowRequest
-from services.notification_service import create_notification, update_notification_type
+from services.notification_service import create_notification, update_notification_type, delete_notification_by_type
 from services.auth_service import get_user_by_id
 
 
@@ -70,6 +70,11 @@ def unfollow_user(follower_id: int, target_id: int) -> dict:
     if follow:
         db.session.delete(follow)
         db.session.commit()
+        delete_notification_by_type(
+            recipient_id=target_id,
+            actor_id=follower_id,
+            type='new_follower'
+        )
     else:
         return {"success": False, "errors": ["You are not following this user"]}
 
@@ -168,6 +173,11 @@ def reject_request(target_id: int, requester_id: int) -> dict:
 
     db.session.delete(follow_request)
     db.session.commit()
+    delete_notification_by_type(
+        recipient_id=target_id,
+        actor_id=requester_id,
+        type='follow_request'
+    )
     return {"success": True}
 
 def cancel_request(requester_id: int, target_id: int) -> dict:
@@ -181,6 +191,11 @@ def cancel_request(requester_id: int, target_id: int) -> dict:
 
     db.session.delete(follow_request)
     db.session.commit()
+    delete_notification_by_type(
+        recipient_id=target_id,
+        actor_id=requester_id,
+        type='follow_request'
+    )
     return {"success": True}
 
 def get_pending_requests(user_id: int):
