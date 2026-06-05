@@ -1,6 +1,7 @@
 from database import db
 from models import User, Follow
 from models.follow_request import FollowRequest
+from services.notification_service import create_notification, update_notification_type
 from services.auth_service import get_user_by_id
 
 
@@ -35,6 +36,11 @@ def follow_user(follower_id: int, target_id: int) -> dict:
         )
         db.session.add(follow_request)
         db.session.commit()
+        create_notification(
+            recipient_id=target_id,
+            actor_id=follower_id,
+            type='follow_request'
+        )
         return {"success": True, "status": "requested"}
 
 
@@ -45,6 +51,11 @@ def follow_user(follower_id: int, target_id: int) -> dict:
 
     db.session.add(follow)
     db.session.commit()
+    create_notification(
+        recipient_id=target_id,
+        actor_id=follower_id,
+        type='new_follower'
+    )
     return {"success": True, "status": "followed"}
 
 def unfollow_user(follower_id: int, target_id: int) -> dict:
@@ -133,6 +144,17 @@ def accept_request(target_id: int, requester_id: int) -> dict:
     db.session.add(follow)
     db.session.delete(follow_request)
     db.session.commit()
+    update_notification_type(
+        recipient_id=target_id,
+        actor_id=requester_id,
+        old_type='follow_request',
+        new_type='now_following'
+    )
+    create_notification(
+        recipient_id=requester_id,
+        actor_id=target_id,
+        type='follow_accepted'
+    )
     return {"success": True}
 
 def reject_request(target_id: int, requester_id: int) -> dict:
