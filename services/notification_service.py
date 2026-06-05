@@ -51,3 +51,13 @@ def delete_notification(notification_id: int, user_id: int) -> dict:
     db.session.delete(notification)
     db.session.commit()
     return {"success": True}
+
+def delete_notification_by_type(recipient_id: int, actor_id: int, type: str) -> None:
+    notification = Notification.query.filter_by(
+        recipient_id=recipient_id,
+        actor_id=actor_id,
+        type=type
+    ).first()
+    if notification:
+        db.session.delete(notification)
+        db.session.commit()
