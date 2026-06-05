@@ -33,12 +33,10 @@ let notifLoaded = false;
 // ── Toggle open/close ──
 function toggleNotif(e) {
     e.stopPropagation();
-    // close user menu if open
     userMenu?.classList.remove('open');
-
     const wrap   = document.getElementById('notifWrap');
     const isOpen = wrap.classList.toggle('open');
-    if (isOpen && !notifLoaded) {
+    if (isOpen) {
         notifLoaded = true;
         loadNotifications();
     }
@@ -72,8 +70,8 @@ async function loadNotifications() {
         }
 
         items.forEach(n => listEl.appendChild(buildNotifItem(n)));
-        // badge already cleared by mark_all_read on server — set to 0
-        updateBadge(0);
+
+        setTimeout(() => updateBadge(0), 400);
 
     } catch {
         listEl.innerHTML = '<div class="notif-empty">Failed to load.</div>';
@@ -89,7 +87,6 @@ function buildNotifItem(n) {
     const displayName = n.actor_display_name?.trim() || n.actor_username;
     const time        = timeAgo(n.created_at);
 
-    // message per type
     const messages = {
         follow_request:  `<strong>${displayName}</strong> wants to follow you.`,
         new_follower:    `<strong>${displayName}</strong> started following you.`,
@@ -98,12 +95,18 @@ function buildNotifItem(n) {
     };
     const msg = messages[n.type] || `<strong>${displayName}</strong> did something.`;
 
-    // action buttons only for pending requests
     const actionsHTML = n.type === 'follow_request' ? `
         <div class="notif-actions" id="notif-actions-${n.id}">
             <button class="notif-action-btn accept" onclick="handleRequest('${n.actor_username}', 'accept', ${n.id})">Accept</button>
             <button class="notif-action-btn reject" onclick="handleRequest('${n.actor_username}', 'reject', ${n.id})">Decline</button>
         </div>` : '';
+
+    const deleteBtn = n.type === 'follow_request' ? '' : `
+        <button class="notif-delete" title="Remove" onclick="deleteNotif(${n.id}, this)">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 5l10 10M15 5L5 15"/>
+            </svg>
+        </button>`;
 
     item.innerHTML = `
         <a href="/u/${n.actor_username}" class="notif-avatar">${n.actor_username[0].toUpperCase()}</a>
@@ -112,11 +115,7 @@ function buildNotifItem(n) {
             <div class="notif-time">${time}</div>
             ${actionsHTML}
         </div>
-        <button class="notif-delete" title="Remove" onclick="deleteNotif(${n.id}, this)">
-            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M5 5l10 10M15 5L5 15"/>
-            </svg>
-        </button>`;
+        ${deleteBtn}`;
 
     return item;
 }

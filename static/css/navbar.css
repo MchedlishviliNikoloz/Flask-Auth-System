@@ -178,11 +178,19 @@
 }
 .notif-item:last-child { border-bottom: none; }
 .notif-item:hover { background: var(--canvas); }
-.notif-item.unread { background: #fafaf7; }
+.notif-item.unread {
+    background: #f5f4ef;
+}
 .notif-item.unread::before {
     content: '';
     position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
     background: var(--accent); border-radius: 0 2px 2px 0;
+}
+.notif-item.unread .notif-text {
+    color: var(--ink);
+}
+.notif-item.unread .notif-avatar {
+    box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--accent);
 }
 
 /* Avatar */
