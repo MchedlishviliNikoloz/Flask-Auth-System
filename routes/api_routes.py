@@ -2,7 +2,8 @@ from flask import Blueprint, request, session
 from models.user import User
 from database import db
 from models.profile import Profile
-from services import register_user, authenticate_user, username_exists, email_exists
+from services import (register_user, authenticate_user, username_exists, email_exists,
+                      get_notifications, mark_all_read, get_unread_count, delete_notification)
 from services import (update_general, update_contact, update_password, delete_profile,
                       update_privacy, get_user_by_username, accept_request, reject_request, get_pending_requests)
 
@@ -263,3 +264,37 @@ def api_pending_requests():
     } for r in requests]
 
     return {"success": True, "users": users}, 200
+
+@api_bp.route('/api/notifications', methods=['GET'])
+def api_notifications():
+    if not session.get('user_id'):
+        return {"success": False, "errors": ["No active session found."]}, 401
+
+    user_id = session.get('user_id')
+    notifications = get_notifications(user_id)
+    mark_all_read(user_id)
+    result = [{
+        "id": n.id,
+        "type": n.type,
+        "actor_username": n.actor.username,
+        "actor_display_name": (n.actor.profile.first_name or '') + ' ' + (n.actor.profile.last_name or ''),
+        "is_read": n.is_read,
+        "created_at": n.created_at.isoformat()
+    } for n in notifications]
+    return {"success": True, "notifications": result}, 200
+
+@api_bp.route('/api/notifications/unread-count', methods=['GET'])
+def api_unread_count():
+    if not session.get('user_id'):
+        return {"success": False, "errors": ["No active session found."]}, 401
+    count = get_unread_count(session.get('user_id'))
+    return {"count": count}, 200
+
+@api_bp.route('/api/notifications/<int:notification_id>', methods=['DELETE'])
+def api_delete_notification(notification_id):
+    if not session.get('user_id'):
+        return {"success": False, "errors": ["No active session found."]}, 401
+    result = delete_notification(notification_id, session.get('user_id'))
+    if not result["success"]:
+        return result, 400
+    return {"success": True}, 200
