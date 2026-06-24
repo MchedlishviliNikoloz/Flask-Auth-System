@@ -3,7 +3,7 @@ from models.user import User
 from database import db
 from models.profile import Profile
 from services import (register_user, authenticate_user, username_exists, email_exists,
-                      get_notifications, mark_all_read, get_unread_count, delete_notification)
+                      get_notifications, mark_all_read, get_unread_count, delete_notification, search_users)
 from services import (update_general, update_contact, update_password, delete_profile,
                       update_privacy, get_user_by_username, accept_request, reject_request, get_pending_requests)
 
@@ -300,3 +300,19 @@ def api_delete_notification(notification_id):
     if not result["success"]:
         return result, 400
     return {"success": True}, 200
+
+@api_bp.route('/api/search', methods=['GET'])
+def api_search():
+    query = request.args.get('q', '').strip()
+    if not query:
+        return {"success": True, "users": []}, 200
+
+    users = search_users(query, limit=10)
+
+    result = [{
+        "username": u.username,
+        "display_name": ((u.profile.first_name or '') + ' ' + (u.profile.last_name or '')).strip(),
+        "is_public": u.profile.is_public
+    } for u in users]
+
+    return {"success": True, "users": result}, 200
