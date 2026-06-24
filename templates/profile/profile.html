@@ -273,9 +273,22 @@
 </div>
 
 <nav class="navbar">
-    <div class="logo">FlaskAuth</div>
+    <div class="logo"><a href="{{ url_for('main.home') }}">FlaskAuth</a></div>
     <div class="nav-right">
         {% if session.get('user_id') %}
+
+        <!-- Search -->
+        <div class="search-wrap" id="searchWrap">
+            <button class="search-btn" onclick="toggleSearch(event)">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="8.5" cy="8.5" r="5.5"/><path d="M13.5 13.5L18 18"/>
+                </svg>
+            </button>
+            <input type="text" class="search-input" id="searchInput" placeholder="Search users...">
+            <div class="search-dropdown" id="searchDropdown">
+                <div class="search-list" id="searchList"></div>
+            </div>
+        </div>
 
         <!-- Notifications bell -->
         <div class="notif-wrap" id="notifWrap">
