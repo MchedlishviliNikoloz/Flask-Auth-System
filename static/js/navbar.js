@@ -236,6 +236,12 @@ document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
         document.getElementById('notifWrap')?.classList.remove('open');
         userMenu?.classList.remove('open');
+        const searchWrap = document.getElementById('searchWrap');
+        if (searchWrap) {
+            searchWrap.classList.remove('open', 'results');
+            const inp = document.getElementById('searchInput');
+            if (inp) inp.value = '';
+        }
     }
 });
 
@@ -248,3 +254,96 @@ function timeAgo(isoString) {
     if (diff < 2592000)  return `${Math.floor(diff / 86400)}d ago`;
     return `${Math.floor(diff / 2592000)}mo ago`;
 }
+
+
+/* ═══════════════════════════════════════════════
+   SEARCH
+═══════════════════════════════════════════════ */
+let searchDebounceTimer = null;
+
+function toggleSearch(e) {
+    e.stopPropagation();
+    const wrap = document.getElementById('searchWrap');
+    if (!wrap) return;
+
+    userMenu?.classList.remove('open');
+    document.getElementById('notifWrap')?.classList.remove('open');
+
+    const isOpen = wrap.classList.toggle('open');
+    if (isOpen) {
+        setTimeout(() => document.getElementById('searchInput')?.focus(), 50);
+    } else {
+        wrap.classList.remove('results');
+        const inp = document.getElementById('searchInput');
+        if (inp) inp.value = '';
+    }
+}
+
+const searchInputEl = document.getElementById('searchInput');
+if (searchInputEl) {
+    searchInputEl.addEventListener('input', function () {
+        clearTimeout(searchDebounceTimer);
+        const q = this.value.trim();
+        if (!q) {
+            document.getElementById('searchWrap')?.classList.remove('results');
+            return;
+        }
+        searchDebounceTimer = setTimeout(() => fetchSearch(q), 300);
+    });
+
+    searchInputEl.addEventListener('click', e => e.stopPropagation());
+}
+
+async function fetchSearch(q) {
+    const wrap   = document.getElementById('searchWrap');
+    const listEl = document.getElementById('searchList');
+    if (!wrap || !listEl) return;
+
+    wrap.classList.add('results');
+    listEl.innerHTML = '<div class="search-spinner"><span class="spinner"></span></div>';
+
+    try {
+        const res   = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+        const data  = await res.json();
+        const users = data.users || [];
+
+        listEl.innerHTML = '';
+
+        if (!users.length) {
+            listEl.innerHTML = `
+                <div class="search-empty">
+                    <svg width="28" height="28" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="8.5" cy="8.5" r="5.5"/><path d="M13.5 13.5L18 18"/>
+                    </svg>
+                    No users found.
+                </div>`;
+            return;
+        }
+
+        users.forEach(u => {
+            const a = document.createElement('a');
+            a.href = `/u/${u.username}`;
+            a.className = 'search-result-item';
+            const displayName = u.display_name?.trim() || '';
+            a.innerHTML = `
+                <div class="search-result-avatar">${u.username[0].toUpperCase()}</div>
+                <div class="search-result-info">
+                    <div class="search-result-username">@${u.username}</div>
+                    ${displayName ? `<div class="search-result-displayname">${displayName}</div>` : ''}
+                </div>`;
+            listEl.appendChild(a);
+        });
+    } catch {
+        listEl.innerHTML = '<div class="search-empty">Failed to load.</div>';
+    }
+}
+
+// ── Close search on outside click ──
+document.addEventListener('click', e => {
+    const wrap = document.getElementById('searchWrap');
+    if (wrap && !wrap.contains(e.target)) {
+        wrap.classList.remove('open', 'results');
+        const inp = document.getElementById('searchInput');
+        if (inp) inp.value = '';
+    }
+});
