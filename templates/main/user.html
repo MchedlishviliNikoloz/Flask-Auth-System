@@ -137,7 +137,7 @@
         /* Followers/following modal */
         .modal-overlay { position: fixed; inset: 0; z-index: 500; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 24px; opacity: 0; pointer-events: none; transition: opacity 0.22s ease; }
         .modal-overlay.open { opacity: 1; pointer-events: all; }
-        .modal { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-modal); width: 100%; max-width: 400px; max-height: 80vh; display: flex; flex-direction: column; transform: translateY(12px) scale(0.98); transition: transform 0.22s ease; overflow: hidden; }
+        .modal { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-modal); width: 100%; max-width: 400px; max-height: 520px; display: flex; flex-direction: column; transform: translateY(12px) scale(0.98); transition: transform 0.22s ease; overflow: hidden; }
         .modal-overlay.open .modal { transform: translateY(0) scale(1); }
         .modal-header { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
         .modal-title { font-family: 'DM Serif Display', serif; font-size: 18px; font-weight: 400; color: var(--ink); }
@@ -152,10 +152,12 @@
         .user-row-info { flex: 1; min-width: 0; }
         .user-row-name { font-size: 14px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .user-row-handle { font-size: 12.5px; color: var(--ink-muted); }
-        .modal-footer { padding: 12px 20px; border-top: 1px solid var(--border); text-align: center; flex-shrink: 0; }
-        .load-more-btn { background: none; border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 7px 20px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; color: var(--ink-soft); cursor: pointer; transition: background var(--transition), color var(--transition); }
-        .load-more-btn:hover { background: var(--canvas); color: var(--ink); }
-        .load-more-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .modal-search { padding: 10px 12px; flex-shrink: 0; }
+        .modal-search-wrap { position: relative; }
+        .modal-search-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--ink-muted); pointer-events: none; }
+        .modal-search-input { width: 100%; padding: 8px 12px 8px 34px; background: var(--canvas); border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--ink); outline: none; transition: border-color var(--transition), background var(--transition); }
+        .modal-search-input:focus { border-color: var(--accent); background: var(--surface); }
+        .modal-search-input::placeholder { color: var(--ink-muted); }
         .modal-empty { padding: 40px 20px; text-align: center; font-size: 14px; color: var(--ink-muted); }
         .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--ink-muted); border-radius: 50%; animation: spin 0.7s linear infinite; }
 
@@ -275,10 +277,15 @@
                 <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5l10 10M15 5L5 15"/></svg>
             </button>
         </div>
-        <div class="modal-list" id="followersList"></div>
-        <div class="modal-footer" id="followersFooter" style="display:none;">
-            <button class="load-more-btn" id="followersLoadMore" onclick="loadMore('followers')">Load more</button>
+        <div class="modal-search">
+            <div class="modal-search-wrap">
+                <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="8.5" cy="8.5" r="5.5"/><path d="M13.5 13.5L18 18"/>
+                </svg>
+                <input type="text" class="modal-search-input" id="followersSearch" placeholder="Search followers...">
+            </div>
         </div>
+        <div class="modal-list" id="followersList"></div>
     </div>
 </div>
 
@@ -291,10 +298,15 @@
                 <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5l10 10M15 5L5 15"/></svg>
             </button>
         </div>
-        <div class="modal-list" id="followingList"></div>
-        <div class="modal-footer" id="followingFooter" style="display:none;">
-            <button class="load-more-btn" id="followingLoadMore" onclick="loadMore('following')">Load more</button>
+        <div class="modal-search">
+            <div class="modal-search-wrap">
+                <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="8.5" cy="8.5" r="5.5"/><path d="M13.5 13.5L18 18"/>
+                </svg>
+                <input type="text" class="modal-search-input" id="followingSearch" placeholder="Search following...">
+            </div>
         </div>
+        <div class="modal-list" id="followingList"></div>
     </div>
 </div>
 
@@ -472,8 +484,8 @@ const TARGET       = "{{ searched_user.username }}";
 const IS_LOGGED_IN = {{ 'true' if session.get('user_id') else 'false' }};
 
 const modalState = {
-    followers: { offset:0, exhausted:false, loading:false },
-    following: { offset:0, exhausted:false, loading:false },
+    followers: { offset:0, exhausted:false, loading:false, allUsers:[], query:'' },
+    following: { offset:0, exhausted:false, loading:false, allUsers:[], query:'' },
 };
 
 const followBtn = document.getElementById('followBtn');
@@ -526,48 +538,118 @@ async function toggleFollow(btn) {
     btn.disabled = false;
 }
 
+function buildUserRow(u) {
+    const a = document.createElement('a');
+    a.href = `/u/${u.username}`;
+    a.className = 'user-row';
+    const displayName = u.display_name?.trim() || '';
+    a.innerHTML = `
+        <div class="user-row-avatar">${u.username[0].toUpperCase()}</div>
+        <div class="user-row-info">
+            <div class="user-row-name">@${u.username}</div>
+            ${displayName ? `<div class="user-row-handle">${displayName}</div>` : ''}
+        </div>`;
+    return a;
+}
+
+function filterAndRender(type) {
+    const s      = modalState[type];
+    const listEl = document.getElementById(type === 'followers' ? 'followersList' : 'followingList');
+    const q      = s.query.toLowerCase();
+
+    const filtered = q
+        ? s.allUsers.filter(u =>
+            u.username.toLowerCase().includes(q) ||
+            (u.display_name || '').toLowerCase().includes(q))
+        : s.allUsers;
+
+    listEl.innerHTML = '';
+
+    if (!filtered.length) {
+        listEl.innerHTML = q
+            ? `<div class="modal-empty">No results for "<strong>${s.query}</strong>".</div>`
+            : `<div class="modal-empty">No ${type} yet.</div>`;
+        return;
+    }
+
+    filtered.forEach(u => listEl.appendChild(buildUserRow(u)));
+
+    if (!q && !s.exhausted) {
+        const loader = document.createElement('div');
+        loader.className = 'modal-empty';
+        loader.style.cssText = 'padding:16px;';
+        loader.innerHTML = '<span class="spinner"></span>';
+        listEl.appendChild(loader);
+    }
+}
+
+function setupInfiniteScroll(type) {
+    const listEl = document.getElementById(type === 'followers' ? 'followersList' : 'followingList');
+    if (!listEl) return;
+    if (listEl._scrollHandler) listEl.removeEventListener('scroll', listEl._scrollHandler);
+    listEl._scrollHandler = () => {
+        const s = modalState[type];
+        if (s.loading || s.exhausted || s.query) return;
+        if (listEl.scrollHeight - listEl.scrollTop - listEl.clientHeight < 100) loadBatch(type);
+    };
+    listEl.addEventListener('scroll', listEl._scrollHandler);
+}
+
 function openModal(modalId, type) {
     document.getElementById(modalId).classList.add('open');
     document.body.style.overflow = 'hidden';
-    if (modalState[type].offset === 0 && !modalState[type].loading) loadBatch(type);
+
+    const searchEl = document.getElementById(type === 'followers' ? 'followersSearch' : 'followingSearch');
+    if (searchEl) searchEl.value = '';
+    modalState[type].query = '';
+
+    if (modalState[type].offset === 0 && !modalState[type].loading) {
+        loadBatch(type);
+    } else {
+        filterAndRender(type);
+        if (!modalState[type].exhausted) setupInfiniteScroll(type);
+    }
 }
+
 function closeModal(id) {
     document.getElementById(id).classList.remove('open');
     document.body.style.overflow = '';
 }
+
 async function loadBatch(type) {
     const s      = modalState[type];
     const listEl = document.getElementById(type === 'followers' ? 'followersList' : 'followingList');
-    const footEl = document.getElementById(type === 'followers' ? 'followersFooter' : 'followingFooter');
-    const ldBtn  = document.getElementById(type === 'followers' ? 'followersLoadMore' : 'followingLoadMore');
     if (s.loading || s.exhausted) return;
     s.loading = true;
+
     if (s.offset === 0) listEl.innerHTML = '<div class="modal-empty"><span class="spinner"></span></div>';
-    else if (ldBtn) { ldBtn.disabled = true; ldBtn.textContent = 'Loading…'; }
+
     try {
         const res   = await fetch(`/api/u/${TARGET}/${type}?offset=${s.offset}&limit=${PAGE_SIZE}`);
         const data  = await res.json();
         const users = data.users || [];
-        if (s.offset === 0) listEl.innerHTML = '';
-        if (!users.length && s.offset === 0) {
-            listEl.innerHTML = `<div class="modal-empty">No ${type} yet.</div>`;
-            footEl.style.display = 'none';
-        } else {
-            users.forEach(u => {
-                const a = document.createElement('a');
-                a.href = `/u/${u.username}`;
-                a.className = 'user-row';
-                a.innerHTML = `<div class="user-row-avatar">${u.username[0].toUpperCase()}</div><div class="user-row-info"><div class="user-row-name">${u.display_name?.trim() || u.username}</div><div class="user-row-handle">@${u.username}</div></div>`;
-                listEl.appendChild(a);
-            });
-            s.offset += users.length;
-            if (users.length < PAGE_SIZE) { s.exhausted = true; footEl.style.display = 'none'; }
-            else { footEl.style.display = 'block'; if (ldBtn) { ldBtn.disabled = false; ldBtn.textContent = 'Load more'; } }
-        }
-    } catch { listEl.innerHTML = '<div class="modal-empty">Failed to load.</div>'; }
+
+        s.allUsers = s.allUsers.concat(users);
+        s.offset  += users.length;
+        if (users.length < PAGE_SIZE) s.exhausted = true;
+
+        filterAndRender(type);
+    } catch {
+        if (s.offset === 0) listEl.innerHTML = '<div class="modal-empty">Failed to load.</div>';
+    }
+
     s.loading = false;
+    if (!s.exhausted) setupInfiniteScroll(type);
 }
-function loadMore(type) { loadBatch(type); }
+
+document.getElementById('followersSearch')?.addEventListener('input', function() {
+    modalState.followers.query = this.value.trim();
+    filterAndRender('followers');
+});
+document.getElementById('followingSearch')?.addEventListener('input', function() {
+    modalState.following.query = this.value.trim();
+    filterAndRender('following');
+});
 
 document.getElementById('followersModal')?.addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('followersModal'); });
 document.getElementById('followingModal')?.addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('followingModal'); });
