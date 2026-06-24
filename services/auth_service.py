@@ -79,3 +79,24 @@ def authenticate_user(login_input: str, password: str):
         return {"success": False, "errors": ["Username or Password is incorrect."], }
 
     return {"success": True, "user": user}
+
+def search_users(query: str, limit: int = 10) -> list:
+    if not query or len(query.strip()) < 1:
+        return []
+
+    q = query.strip().lower()
+
+    users = db.session.execute(
+        db.select(User)
+        .join(User.profile)
+        .filter(
+            db.or_(
+                User.username.ilike(f'%{q}%'),
+                Profile.first_name.ilike(f'%{q}%'),
+                Profile.last_name.ilike(f'%{q}%')
+            )
+        )
+        .limit(limit)
+    ).scalars().all()
+
+    return users
