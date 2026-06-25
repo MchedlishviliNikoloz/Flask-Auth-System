@@ -1,6 +1,7 @@
 from models import User, Profile
 from database import db
 from utils.validators import validate_username, validate_email, validate_password
+from sqlalchemy import case
 
 from werkzeug.security import generate_password_hash
 
@@ -84,18 +85,34 @@ def search_users(query: str, limit: int = 10) -> list:
     if not query or len(query.strip()) < 1:
         return []
 
-    q = query.strip().lower()
+    q = query.strip()
+    q_lower = q.lower()
+    tokens = q_lower.split()
+
+    # Each token must match at least one field — AND across tokens so that
+    # "nikoloz beridze" finds users whose first_name matches "nikoloz"
+    # AND last_name matches "beridze" (instead of failing to match either full string).
+    token_conditions = []
+    for token in tokens:
+        token_conditions.append(db.or_(
+            User.username.ilike(f'%{token}%'),
+            Profile.first_name.ilike(f'%{token}%'),
+            Profile.last_name.ilike(f'%{token}%'),
+        ))
+
+    relevance = case(
+        (User.username == q_lower, 0),
+        (User.username.ilike(f'{q_lower}%'), 1),
+        (Profile.first_name.ilike(f'{q_lower}%'), 2),
+        (Profile.last_name.ilike(f'{q_lower}%'), 2),
+        else_=3
+    )
 
     users = db.session.execute(
         db.select(User)
         .join(User.profile)
-        .filter(
-            db.or_(
-                User.username.ilike(f'%{q}%'),
-                Profile.first_name.ilike(f'%{q}%'),
-                Profile.last_name.ilike(f'%{q}%')
-            )
-        )
+        .filter(db.and_(*token_conditions))
+        .order_by(relevance, User.username)
         .limit(limit)
     ).scalars().all()
 
