@@ -196,15 +196,224 @@
     @keyframes panelIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
     @keyframes shakeIn { 0%{transform:translateX(0)} 20%{transform:translateX(-4px)} 40%{transform:translateX(4px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(3px)} 100%{transform:translateX(0)} }
 
-    @media(max-width:768px) {
-        .page{grid-template-columns:1fr}
-        .sidebar{position:static}
-        .sidebar-nav{flex-direction:row;overflow-x:auto;padding-bottom:4px}
-        .sidebar-label,.sidebar-divider{display:none}
-        .sidebar-item{white-space:nowrap}
-        .input-row{grid-template-columns:1fr}
-        .navbar{padding:0 20px}
-        .toast{width:calc(100% - 48px); text-align:center; justify-content:center;}
+    /* ════════════════════════════════════════════
+       MOBILE  ≤ 768 px
+       Desktop styles are untouched above this point.
+    ════════════════════════════════════════════ */
+    @media (max-width: 768px) {
+
+        /* ── Grid collapses to a single column ── */
+        .page {
+            grid-template-columns: 1fr;
+            padding: 0 0 80px;
+            gap: 0;
+            max-width: 100%;
+        }
+
+        .page-header {
+            padding: 24px 16px 16px;
+            margin-bottom: 0;
+        }
+
+        .page-header h1 { font-size: 24px; }
+        .page-header p  { font-size: 13px; }
+
+        /* ── Sidebar → sticky horizontal pill-tab bar ── */
+        .sidebar {
+            position: sticky;
+            top: 64px;          /* exact navbar height from navbar.css */
+            z-index: 90;
+            background: var(--canvas);
+            border-bottom: 1px solid var(--border);
+            padding: 0;
+            height: auto;
+        }
+
+        .sidebar-label,
+        .sidebar-divider { display: none; }
+
+        .sidebar-nav {
+            flex-direction: row;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            gap: 4px;
+            padding: 8px 12px;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .sidebar-nav::-webkit-scrollbar { display: none; }
+
+        /*
+         * THE ROOT FIX:
+         * The base .sidebar-item rule sets width:100%.
+         * In a flex-direction:row container that makes every tab
+         * 100 % of the viewport wide, causing the overflow.
+         * We must explicitly reset it to auto here.
+         */
+        .sidebar-item {
+            width: auto;
+            flex-shrink: 0;
+            flex-grow: 0;
+            white-space: nowrap;
+            padding: 7px 13px;
+            border-radius: 999px;
+            font-size: 13px;
+            gap: 6px;
+            min-height: 36px;
+            border: 1.5px solid transparent;
+            box-shadow: none;
+        }
+
+        .sidebar-item:hover {
+            background: var(--surface);
+            color: var(--ink);
+        }
+
+        .sidebar-item.active {
+            background: var(--ink);
+            color: var(--canvas);
+            border-color: transparent;
+            box-shadow: none;
+        }
+
+        .sidebar-item.active svg { color: var(--canvas); }
+
+        /* ── Content ── */
+        .content {
+            width: 100%;
+            min-width: 0;
+            padding: 20px 16px;
+        }
+
+        /* ── Panel cards ── */
+        .panel-card { margin-bottom: 16px; }
+
+        .avatar-section {
+            padding: 16px 18px;
+            gap: 12px;
+        }
+
+        .avatar-circle {
+            width: 52px;
+            height: 52px;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .panel-card-header { padding: 18px 18px 14px; }
+        .panel-card-body   { padding: 18px 18px; }
+
+        .panel-card-footer {
+            padding: 14px 18px;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+        }
+
+        .panel-card-footer-hint {
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .danger-card-header { padding: 16px 18px 14px; }
+        .danger-card-body   { padding: 16px 18px; }
+
+        .danger-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 14px;
+        }
+
+        /* ── Forms ── */
+        .input-row {
+            grid-template-columns: 1fr;
+            gap: 0;
+        }
+
+        .input-group input,
+        .input-group textarea {
+            font-size: 16px;    /* prevents iOS auto-zoom on focus */
+            min-height: 48px;
+        }
+
+        /* ── Buttons — 48 px tap targets ── */
+        .btn {
+            min-height: 48px;
+            font-size: 15px;
+        }
+
+        .btn-sm {
+            min-height: 44px;
+            font-size: 14px;
+            padding: 10px 18px;
+        }
+
+        .panel-card-footer .btn,
+        .danger-item .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* ── Privacy toggle row ── */
+        .privacy-row {
+            flex-wrap: wrap;
+            gap: 12px 16px;
+        }
+
+        /* ── Modal — centered, 90 % width ── */
+        .modal-overlay {
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal {
+            width: 90%;
+            max-width: 420px;
+            border-radius: var(--radius-lg);
+            transform: translateY(16px) scale(0.97);
+        }
+
+        .modal-overlay.open .modal {
+            transform: translateY(0) scale(1);
+        }
+
+        .modal-header { padding: 20px 20px 16px; }
+        .modal-body   { padding: 16px 20px; }
+
+        .modal-footer {
+            flex-direction: column;
+            gap: 8px;
+            padding: 14px 20px 20px;
+        }
+
+        .modal-footer .btn { width: 100%; min-height: 44px; }
+
+        /* ── Toast — bottom center ── */
+        .toast {
+            bottom: 20px;
+            width: calc(100% - 40px);
+            max-width: 380px;
+            white-space: normal;
+            text-align: center;
+            justify-content: center;
+        }
+    }
+
+    /* ════════════════════════════════════════════
+       EXTRA SMALL  ≤ 480 px
+       Trim further on narrow phones.
+    ════════════════════════════════════════════ */
+    @media (max-width: 480px) {
+
+        .page-header h1 { font-size: 22px; }
+
+        /* Drop icons from tabs so labels fit without scrolling */
+        .sidebar-item svg { display: none; }
+        .sidebar-item { font-size: 12.5px; padding: 7px 12px; }
+
+        .avatar-section { flex-direction: column; text-align: center; }
+        .avatar-circle  { margin: 0 auto; }
     }
     .toggle-switch {
         position: relative;
@@ -413,12 +622,12 @@
                     <div class="panel-card-body">
 
                         <!-- Toggle row -->
-                        <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
+                        <div class="privacy-row" style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
                             <div>
                                 <div style="font-size:14px; font-weight:600; color:var(--ink); margin-bottom:4px;">Public Profile</div>
                                 <div style="font-size:13px; color:var(--ink-muted); line-height:1.5;">
                                     When enabled, anyone can view your profile at
-                                    <span style="font-family:monospace; font-size:12px; background:var(--canvas); padding:1px 6px; border-radius:4px; border:1px solid var(--border);">/u/{{ user.username }}</span>
+                                    <span style="font-family:monospace; font-size:12px; background:var(--canvas); padding:1px 6px; border-radius:4px; border:1px solid var(--border); white-space: nowrap;">/u/{{ user.username }}</span>
                                 </div>
                             </div>
                             <label class="toggle-switch">
