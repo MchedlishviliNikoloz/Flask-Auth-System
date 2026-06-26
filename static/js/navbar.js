@@ -242,6 +242,7 @@ document.addEventListener('keydown', e => {
             const inp = document.getElementById('searchInput');
             if (inp) inp.value = '';
         }
+        closeSearchOverlay();
     }
 });
 
@@ -263,11 +264,23 @@ let searchDebounceTimer = null;
 
 function toggleSearch(e) {
     e.stopPropagation();
-    const wrap = document.getElementById('searchWrap');
-    if (!wrap) return;
 
     userMenu?.classList.remove('open');
     document.getElementById('notifWrap')?.classList.remove('open');
+
+    // On mobile open the full-screen overlay instead of expanding inline
+    if (window.innerWidth <= 640) {
+        const overlay = document.getElementById('searchOverlay');
+        if (overlay) {
+            overlay.classList.add('open');
+            document.body.style.overflow = 'hidden';
+            setTimeout(() => document.getElementById('searchOverlayInput')?.focus(), 50);
+        }
+        return;
+    }
+
+    const wrap = document.getElementById('searchWrap');
+    if (!wrap) return;
 
     const isOpen = wrap.classList.toggle('open');
     if (isOpen) {
@@ -277,6 +290,17 @@ function toggleSearch(e) {
         const inp = document.getElementById('searchInput');
         if (inp) inp.value = '';
     }
+}
+
+function closeSearchOverlay() {
+    const overlay = document.getElementById('searchOverlay');
+    if (!overlay) return;
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+    const inp = document.getElementById('searchOverlayInput');
+    if (inp) inp.value = '';
+    const list = document.getElementById('searchOverlayList');
+    if (list) list.innerHTML = '';
 }
 
 const searchInputEl = document.getElementById('searchInput');
@@ -347,3 +371,63 @@ document.addEventListener('click', e => {
         if (inp) inp.value = '';
     }
 });
+
+
+/* ═══════════════════════════════════════════════
+   MOBILE SEARCH OVERLAY
+═══════════════════════════════════════════════ */
+const searchOverlayInputEl = document.getElementById('searchOverlayInput');
+if (searchOverlayInputEl) {
+    searchOverlayInputEl.addEventListener('input', function () {
+        clearTimeout(searchDebounceTimer);
+        const q = this.value.trim();
+        const list = document.getElementById('searchOverlayList');
+        if (!q) {
+            if (list) list.innerHTML = '';
+            return;
+        }
+        searchDebounceTimer = setTimeout(() => fetchSearchOverlay(q), 300);
+    });
+}
+
+async function fetchSearchOverlay(q) {
+    const listEl = document.getElementById('searchOverlayList');
+    if (!listEl) return;
+
+    listEl.innerHTML = '<div class="search-spinner"><span class="spinner"></span></div>';
+
+    try {
+        const res   = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+        const data  = await res.json();
+        const users = data.users || [];
+
+        listEl.innerHTML = '';
+
+        if (!users.length) {
+            listEl.innerHTML = `
+                <div class="search-empty">
+                    <svg width="28" height="28" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="8.5" cy="8.5" r="5.5"/><path d="M13.5 13.5L18 18"/>
+                    </svg>
+                    No users found.
+                </div>`;
+            return;
+        }
+
+        users.forEach(u => {
+            const a = document.createElement('a');
+            a.href = `/u/${u.username}`;
+            a.className = 'search-result-item';
+            const displayName = u.display_name?.trim() || '';
+            a.innerHTML = `
+                <div class="search-result-avatar">${u.username[0].toUpperCase()}</div>
+                <div class="search-result-info">
+                    <div class="search-result-username">@${u.username}</div>
+                    ${displayName ? `<div class="search-result-displayname">${displayName}</div>` : ''}
+                </div>`;
+            listEl.appendChild(a);
+        });
+    } catch {
+        listEl.innerHTML = '<div class="search-empty">Failed to load.</div>';
+    }
+}
