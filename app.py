@@ -7,6 +7,7 @@ from database import db
 from models import User
 from routes import *
 
+
 app = Flask(__name__)
 
 load_dotenv()
@@ -26,7 +27,10 @@ app.register_blueprint(main_bp)
 
 @app.errorhandler(404)
 def not_found(e):
-    return render_template('errors/404.html'), 404
+    user = None
+    if session.get('user_id'):
+        user = db.session.get(User, session['user_id'])
+    return render_template('errors/404.html', user=user), 404
 
 if __name__ == '__main__':
     with app.app_context():

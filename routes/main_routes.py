@@ -26,7 +26,7 @@ def user_profile(username):
 
     searched_user = get_user_by_username(username)
     if not searched_user:
-        return render_template('errors/404.html'), 404
+        return render_template('errors/404.html', user=logged_user), 404
 
     is_own = logged_user and logged_user.id == searched_user.id
     is_follower = logged_user and any(
