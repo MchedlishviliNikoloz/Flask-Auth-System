@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>{% block title %}FlaskAuth{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink:       #1a1a1a;
+            --ink-soft:  #4a4a4a;
+            --ink-muted: #888;
+            --canvas:    #f7f6f2;
+            --surface:   #ffffff;
+            --border:    #e2e0d8;
+            --accent:    #1a1a1a;
+            --accent-fg: #ffffff;
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --transition: 180ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html { height: 100%; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: var(--canvas);
+            background-image:
+                radial-gradient(ellipse 80% 60% at 20% 10%, rgba(26,26,26,0.04) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 50% at 85% 85%, rgba(26,26,26,0.03) 0%, transparent 60%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+            color: var(--ink);
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    {% block content %}{% endblock %}
+
+    {% block extra_js %}{% endblock %}
+
+</body>
+</html>
